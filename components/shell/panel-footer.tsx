@@ -19,7 +19,9 @@ export function PanelFooter() {
     // where the rail's copyright stands in for it.
     <footer className="panel-footer border-t border-line px-5 py-10 sm:px-8 lg:px-12">
       <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-        <div>
+        {/* Hidden on /contact, where the same block sits in the page's own
+            column (design/tokens.css, `.panel-footer__cta`). */}
+        <div className="panel-footer__cta">
           <p className="font-mono text-2xs uppercase tracking-widest text-text-3">
             Start a project
           </p>
@@ -34,7 +36,7 @@ export function PanelFooter() {
           </p>
         </div>
 
-        <nav aria-label="Footer" className="lg:text-right">
+        <nav aria-label="Footer" className="lg:ml-auto lg:text-right">
           <ul className="flex flex-wrap gap-x-5 gap-y-2 lg:justify-end">
             {NAV.filter((l) => l.href !== "/").map((l) => (
               <li key={l.href}>
