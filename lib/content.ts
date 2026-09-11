@@ -11,6 +11,8 @@ export type Metric = {
 export type WorkMeta = {
   slug: string;
   title: string;
+  /** What the title stands for, when it is an acronym. Given by Jan. */
+  fullName?: string;
   subtitle?: string;
   /** The real client name. Only rendered when clientCleared is true. */
   client: string;
@@ -43,6 +45,12 @@ export type WorkMeta = {
   version?: string;
   /** Live site, demo or release feed — gated in lib/live.ts. */
   live?: import("./live").LiveLink[];
+  /**
+   * One line under the preview frame: where its pixels came from. Required
+   * in spirit whenever the preview is not the live system itself — a demo
+   * instance, a local stack, synthetic data.
+   */
+  previewNote?: string;
 };
 
 export type WorkDoc = WorkMeta & { body: string };

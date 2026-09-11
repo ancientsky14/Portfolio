@@ -26,6 +26,7 @@ export default function WorkIndex() {
   const items: GalleryItem[] = getAllWork().map((w) => ({
     slug: w.slug,
     title: w.title,
+    fullName: w.fullName,
     subtitle: w.subtitle,
     summary: w.summary,
     client: displayClient(w),

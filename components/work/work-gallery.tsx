@@ -40,6 +40,8 @@ import { ToolIcon } from "@/components/icons/tool-icon";
 export type GalleryItem = {
   slug: string;
   title: string;
+  /** What the acronym stands for (WorkMeta.fullName in lib/content.ts). */
+  fullName?: string;
   subtitle?: string;
   summary?: string;
   client: string;
@@ -128,6 +130,11 @@ function TitlePanel({ it, large }: { it: GalleryItem; large?: boolean }) {
         >
           {it.title}
         </p>
+        {it.fullName ? (
+          <p className="mt-2 max-w-md font-mono text-2xs uppercase tracking-widest text-text-3">
+            {it.fullName}
+          </p>
+        ) : null}
         <ul aria-hidden="true" className="mt-4 flex flex-wrap gap-3 opacity-80">
           {it.stack.slice(0, large ? 6 : 4).map((s) => (
             <li key={s}>
@@ -311,6 +318,11 @@ function Viewer({
             <h2 id={titleId} className="font-display text-2xl font-bold tracking-tight">
               {it.title}
             </h2>
+            {it.fullName ? (
+              <p className="mt-1 font-mono text-2xs font-semibold uppercase tracking-widest text-accent">
+                {it.fullName}
+              </p>
+            ) : null}
             {it.subtitle ? (
               <p className="mt-1 text-text-2">{it.subtitle}</p>
             ) : null}
@@ -536,6 +548,11 @@ export function WorkGallery({ items }: { items: GalleryItem[] }) {
                       className="shrink-0 text-text-3 transition-all duration-300 ease-(--ease-out) group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
                     />
                   </div>
+                  {it.fullName ? (
+                    <span className="mt-3 block font-mono text-2xs font-semibold uppercase tracking-widest text-accent">
+                      {it.fullName}
+                    </span>
+                  ) : null}
 
                   {it.subtitle ? (
                     <span className="mt-3 block text-sm leading-relaxed text-text-2">

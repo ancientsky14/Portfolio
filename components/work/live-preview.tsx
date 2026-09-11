@@ -9,9 +9,9 @@ import { LoopVideo } from "@/components/work/loop-video";
  *
  * Inside the frame, in order of preference: the first screen recording in
  * public/work/<slug>/, else the first screenshot, else a composed title
- * panel. Recordings and screenshots are captured from synthetic data only
- * (lib/shots.ts) — the frame shows a real address, the pixels must never
- * show a real record.
+ * panel. Where the pixels came from — synthetic data, or the live system with
+ * contact details masked — is the rule in lib/shots.ts, and each case study
+ * says which in its `previewNote`, shown under the frame.
  *
  * No iframe: the live systems refuse to be framed (frame-ancestors
  * 'none'), correctly. The live link sits beside this, not inside it.

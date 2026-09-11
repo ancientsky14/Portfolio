@@ -8,9 +8,14 @@ import path from "node:path";
  * None exist yet, so every viewer and card shows its no-screenshot state.
  * Drop files in and they appear at the next build — no code change.
  *
- * Build plan §09, and still the rule: capture from a database reseeded with
- * synthetic records. Never real citizen, client or financial data, and never
- * a blur over real data — blur gets undone.
+ * Build plan §09, and still the default: capture from a database reseeded
+ * with synthetic records. Never citizen, client or financial records.
+ *
+ * One reviewed exception, Jan's call on 2026-09-11: LMIS is captured from the
+ * live system (scripts/capture/lmis-prod.mjs) — its public portal, which is
+ * public record, and an allowlist of staff pages with contact details
+ * masked. Every other project is captured from synthetic data
+ * (scripts/capture/*.mjs), and every file is reviewed by Jan before it ships.
  */
 
 const IMAGE = /\.(png|jpe?g|webp|avif)$/i;

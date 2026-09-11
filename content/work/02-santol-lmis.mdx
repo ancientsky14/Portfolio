@@ -1,6 +1,7 @@
 ---
 slug: santol-lmis
 title: "LMIS"
+fullName: "Legislative Management & Information System" # Jan, 2026-09-11
 subtitle: "Legislative portal and role-based CMS, across three surfaces"
 client: "Municipality of Santol, La Union"
 clientCleared: true # cleared for naming by Jan, 2026-09-11
@@ -16,12 +17,17 @@ deployments: ["lmis", "lmis-staff", "lmis-admin"]
 live:
   - kind: "production"
     label: "Public portal"
-    # NEEDS: the current public URL. santol.gov.ph does not resolve (DNS,
-    # checked 2026-09-11) — it is the planned domain in the repo's deploy
-    # docs, not the live one. Public portal only: never staff or admin.
-    href: null
+    # Given by Jan, 2026-09-11: the public portal on Cloudflare Workers.
+    # santol.gov.ph is the planned domain and does not resolve yet. Public
+    # portal only — lmis-admin is never linked (lib/live.ts blocks it).
+    href: "https://lmis.santol-lu.workers.dev"
     note: "The live site residents use"
     cleared: true # linking cleared by Jan, 2026-09-11
+# Captured from the live system on Jan's instruction (2026-09-11), replacing
+# the Miraverde demo: the public portal, and an allowlist of staff-application
+# pages with email addresses, phone numbers and nearby names masked
+# (scripts/capture/lmis-prod.mjs). Jan reviews every file before it ships.
+previewNote: "Recorded on the live system — the public portal and the staff application. Staff contact details are masked."
 featured: true
 order: 2
 bodyReviewed: true # body confirmed by Jan, 2026-09-11

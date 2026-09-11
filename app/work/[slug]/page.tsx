@@ -57,7 +57,10 @@ export async function generateMetadata({
   const { slug } = await params;
   const w = getWork(slug);
   if (!w) return {};
-  return { title: w.title, description: w.summary };
+  return {
+    title: w.fullName ? `${w.title} — ${w.fullName}` : w.title,
+    description: w.summary,
+  };
 }
 
 const bare = (s: string) => s.replace(/\s+\d+(\.\d+)*$/, "");
@@ -104,6 +107,11 @@ export default async function CaseStudy({
         <h1 data-split className="mt-8 font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
           {w.title}
         </h1>
+        {w.fullName ? (
+          <p className="mt-3 font-mono text-2xs font-semibold uppercase tracking-widest text-accent">
+            {w.fullName}
+          </p>
+        ) : null}
         {w.subtitle ? (
           <p className="mt-3 max-w-2xl text-lg text-text-2">{w.subtitle}</p>
         ) : null}
@@ -178,6 +186,9 @@ export default async function CaseStudy({
             host={webLink ? hostOf(webLink.href) : undefined}
             media={media}
           />
+          {w.previewNote ? (
+            <p className="mt-3 text-sm text-text-3">{w.previewNote}</p>
+          ) : null}
         </div>
       </div>
 
