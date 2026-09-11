@@ -1,9 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { BriefcaseBusiness, Lightbulb, Send } from "lucide-react";
+import {
+  ArrowLeftRight,
+  BadgeCheck,
+  Building2,
+  BriefcaseBusiness,
+  CalendarClock,
+  CalendarRange,
+  CircleHelp,
+  Clock,
+  EyeOff,
+  FileText,
+  House,
+  Lightbulb,
+  Minus,
+  ScanSearch,
+  Send,
+  Zap,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SITE } from "@/lib/site";
+import { Select, type SelectOption } from "@/components/ui/select";
 
 /**
  * The contact form — a project brief, or a job opportunity.
@@ -31,6 +49,34 @@ const FIELD =
   "mt-2 w-full rounded-md border border-line bg-surface px-3.5 py-2.5 text-sm text-text placeholder:text-text-3 transition-colors focus:border-accent";
 
 const LABEL = "block text-sm font-medium text-text";
+
+// The designed dropdowns (components/ui/select.tsx). Values are the labels,
+// as they were with the native selects, so the email text is unchanged; ""
+// is "nothing chosen" and leaves its line out of the email.
+const TIMELINE: SelectOption[] = [
+  { value: "", label: "Not sure yet", icon: CircleHelp },
+  { value: "As soon as possible", label: "As soon as possible", icon: Zap },
+  { value: "In the next 1–3 months", label: "In the next 1–3 months", icon: CalendarClock },
+  { value: "Later this year", label: "Later this year", icon: CalendarRange },
+];
+const BUDGET: SelectOption[] = [
+  { value: "", label: "Prefer not to say yet", icon: EyeOff },
+  { value: "Budget is approved", label: "Budget is approved", icon: BadgeCheck },
+  { value: "Still scoping it", label: "Still scoping it", icon: ScanSearch },
+  { value: "Not sure how it would be funded", label: "Not sure how it would be funded", icon: CircleHelp },
+];
+const TYPE: SelectOption[] = [
+  { value: "", label: "Not specified", icon: Minus },
+  { value: "Full-time", label: "Full-time", icon: BriefcaseBusiness },
+  { value: "Part-time", label: "Part-time", icon: Clock },
+  { value: "Contract", label: "Contract", icon: FileText },
+];
+const SETUP: SelectOption[] = [
+  { value: "", label: "Not specified", icon: Minus },
+  { value: "Remote", label: "Remote", icon: House },
+  { value: "Hybrid", label: "Hybrid", icon: ArrowLeftRight },
+  { value: "On-site", label: "On-site", icon: Building2 },
+];
 
 function val(data: FormData, key: string) {
   return String(data.get(key) ?? "").trim();
@@ -178,25 +224,9 @@ export function BriefForm() {
             />
           </label>
 
-          <label className={LABEL}>
-            Timeline
-            <select name="timeline" defaultValue="" className={FIELD}>
-              <option value="">Not sure yet</option>
-              <option>As soon as possible</option>
-              <option>In the next 1–3 months</option>
-              <option>Later this year</option>
-            </select>
-          </label>
+          <Select name="timeline" label="Timeline" options={TIMELINE} />
 
-          <label className={LABEL}>
-            Budget
-            <select name="budget" defaultValue="" className={FIELD}>
-              <option value="">Prefer not to say yet</option>
-              <option>Budget is approved</option>
-              <option>Still scoping it</option>
-              <option>Not sure how it would be funded</option>
-            </select>
-          </label>
+          <Select name="budget" label="Budget" options={BUDGET} />
         </>
       ) : (
         <>
@@ -210,25 +240,9 @@ export function BriefForm() {
             />
           </label>
 
-          <label className={LABEL}>
-            Type
-            <select name="type" defaultValue="" className={FIELD}>
-              <option value="">—</option>
-              <option>Full-time</option>
-              <option>Part-time</option>
-              <option>Contract</option>
-            </select>
-          </label>
+          <Select name="type" label="Type" options={TYPE} />
 
-          <label className={LABEL}>
-            Work setup
-            <select name="setup" defaultValue="" className={FIELD}>
-              <option value="">—</option>
-              <option>Remote</option>
-              <option>Hybrid</option>
-              <option>On-site</option>
-            </select>
-          </label>
+          <Select name="setup" label="Work setup" options={SETUP} />
 
           <label className={cn(LABEL, "sm:col-span-2")}>
             Details
