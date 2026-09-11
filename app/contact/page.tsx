@@ -82,7 +82,7 @@ export default function Contact() {
             </div>
           </div>
 
-          <aside data-reveal data-page="contact">
+          <aside data-reveal>
             <h2 className="font-display text-2xl font-semibold tracking-tight">
               Or find me here
             </h2>
@@ -121,24 +121,6 @@ export default function Contact() {
                 </li>
               ))}
             </ul>
-
-            {/* The footer's "Start a project" block, moved here on this page
-                (the footer hides its copy on /contact — design/tokens.css). */}
-            <div className="mt-6 rounded-md border border-glass-line bg-glass p-5 backdrop-blur-xl">
-              <p className="font-mono text-2xs uppercase tracking-widest text-text-3">
-                Start a project
-              </p>
-              <a
-                href={`mailto:${SITE.email}`}
-                className="mt-2 inline-flex items-center gap-2 break-all font-display text-lg font-semibold tracking-tight text-text transition-colors hover:text-accent"
-              >
-                <Mail size={18} strokeWidth={1.75} aria-hidden="true" className="shrink-0 text-accent" />
-                {SITE.email}
-              </a>
-              <p className="mt-2 text-sm text-text-2">
-                Or use the form. Both reach the same inbox.
-              </p>
-            </div>
           </aside>
         </div>
       </section>

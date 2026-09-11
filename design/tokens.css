@@ -976,10 +976,3 @@ html.is-intro [data-intro="tabbar"] {
     font-size: 12px;
   }
 }
-/* On /contact the footer's "Start a project" email block sits in the page's
-   own column instead (app/contact/page.tsx), so the footer drops its copy
-   there. Every other page keeps it. */
-.panel-scroller:has([data-page="contact"]) .panel-footer__cta,
-body:has([data-page="contact"]) .panel-footer__cta {
-  display: none;
-}
