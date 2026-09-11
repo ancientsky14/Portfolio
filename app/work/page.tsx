@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getAllWork, displayClient, realMetrics } from "@/lib/content";
 import { shotsFor } from "@/lib/shots";
+import { liveLinks } from "@/lib/live";
 import { WorkGallery, type GalleryItem } from "@/components/work/work-gallery";
 import { DotPattern } from "@/components/ui/dot-pattern";
 
@@ -40,6 +41,12 @@ export default function WorkIndex() {
       value: m.value as string | number,
     })),
     shots: shotsFor(w.slug),
+    // Cleared links only, staff/admin hosts already dropped (lib/live.ts).
+    live: liveLinks(w).map((l) => ({
+      label: l.label,
+      href: l.href,
+      kind: l.kind,
+    })),
   }));
 
   return (

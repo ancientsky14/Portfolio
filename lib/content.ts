@@ -36,10 +36,13 @@ export type WorkMeta = {
   bodyReviewed?: boolean;
   /** What kind of thing was built — shown as a badge. */
   platform?: "Web" | "Desktop" | "Platform";
-  /** Plain-language state: "In use", "In production", "In development". */
+  /** Plain-language state: "In use", "In production", "In testing", "In development".
+   *  Only the first two count as live — "testing" and "development" do not. */
   status?: string;
   /** Current release, for things that ship versions. */
   version?: string;
+  /** Live site, demo or release feed — gated in lib/live.ts. */
+  live?: import("./live").LiveLink[];
 };
 
 export type WorkDoc = WorkMeta & { body: string };

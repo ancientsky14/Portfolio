@@ -52,6 +52,8 @@ export type GalleryItem = {
   stack: string[];
   metrics: { label: string; value: string | number }[];
   shots: string[];
+  /** Cleared live links (lib/live.ts). `release` gets no "Live" chip. */
+  live: { label: string; href: string; kind: string }[];
 };
 
 const PLATFORM_ICON: Record<string, LucideIcon> = {
@@ -67,7 +69,7 @@ const FOCUSABLE =
   'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 function Badges({ it }: { it: GalleryItem }) {
-  const live = it.status ? !/develop/i.test(it.status) : false;
+  const live = it.status ? !/develop|testing/i.test(it.status) : false;
   const Icon = it.platform ? PLATFORM_ICON[it.platform] : null;
   const pill =
     "inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 text-xs font-semibold text-text";
@@ -90,6 +92,12 @@ function Badges({ it }: { it: GalleryItem }) {
       ) : null}
       {it.version ? (
         <li className={cn(pill, "font-mono")}>v{it.version}</li>
+      ) : null}
+      {it.live.some((l) => l.kind !== "release") ? (
+        <li className={cn(pill, "text-accent")}>
+          <ArrowUpRight size={13} strokeWidth={2} aria-hidden="true" />
+          Live
+        </li>
       ) : null}
     </ul>
   );
@@ -374,6 +382,23 @@ function Viewer({
                 className="transition-transform duration-300 ease-(--ease-out) group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
               />
             </Link>
+            {it.live.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="group ml-2 mt-6 inline-flex items-center gap-2 rounded-full border border-line-2 bg-surface py-2.5 pl-5 pr-4 text-sm font-semibold text-text transition-colors hover:border-accent"
+              >
+                {l.label}
+                <ArrowUpRight
+                  size={16}
+                  strokeWidth={2}
+                  aria-hidden="true"
+                  className="transition-transform duration-300 ease-(--ease-out) group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                />
+              </a>
+            ))}
           </div>
         </div>
 

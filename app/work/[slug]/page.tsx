@@ -8,7 +8,11 @@ import {
   Building2,
   CalendarDays,
   FileText,
+  Globe,
+  MousePointerClick,
+  PackageCheck,
   UserRound,
+  type LucideIcon,
 } from "lucide-react";
 import {
   getAllWork,
@@ -18,9 +22,25 @@ import {
   realMetrics,
 } from "@/lib/content";
 import { prepareBody, bodyVisibility } from "@/lib/mdx";
+import { liveLinks, checkLive, hostOf, type LiveKind } from "@/lib/live";
+import { mediaFor } from "@/lib/shots";
 import { mdxComponents } from "@/components/mdx/mdx-components";
 import { ToolIcon } from "@/components/icons/tool-icon";
 import { WorkBadges } from "@/components/work/badges";
+import { LivePreview } from "@/components/work/live-preview";
+
+const LIVE_ICON: Record<LiveKind, LucideIcon> = {
+  production: Globe,
+  demo: MousePointerClick,
+  release: PackageCheck,
+};
+
+const DATE = new Intl.DateTimeFormat("en-PH", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "Asia/Manila",
+});
 
 // `output: "export"` — every slug is known at build time, nothing else is.
 export const dynamicParams = false;
@@ -58,6 +78,13 @@ export default async function CaseStudy({
   const all = getAllWork();
   const next = all[(all.findIndex((x) => x.slug === w.slug) + 1) % all.length];
 
+  // Live links and their build-time status (lib/live.ts), and the preview's
+  // recording or screenshot (lib/shots.ts).
+  const links = liveLinks(w);
+  const statuses = await Promise.all(links.map((l) => checkLive(l.href)));
+  const webLink = links.find((l) => l.kind !== "release");
+  const media = mediaFor(w.slug);
+
   return (
     <article>
       <header className="border-b border-line px-5 py-14 sm:px-8 sm:py-20 lg:px-12">
@@ -83,12 +110,76 @@ export default async function CaseStudy({
 
         <WorkBadges w={w} className="mt-6" />
 
+        {/* See it live — the real site, a demo or a release feed. */}
+        {links.length ? (
+          <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-4">
+            {links.map((l, i) => {
+              const Icon = LIVE_ICON[l.kind];
+              const s = statuses[i];
+              return (
+                <li key={l.href}>
+                  <a
+                    href={l.href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    data-magnetic
+                    className={
+                      i === 0
+                        ? "group inline-flex items-center gap-2.5 rounded-full bg-text py-3 pl-5 pr-5 text-sm font-semibold text-ground transition-opacity hover:opacity-90"
+                        : "group inline-flex items-center gap-2.5 rounded-full border border-line-2 bg-surface py-3 pl-5 pr-5 text-sm font-semibold text-text transition-colors hover:border-accent"
+                    }
+                  >
+                    <Icon size={16} strokeWidth={1.75} aria-hidden="true" />
+                    {l.label}
+                    <ArrowUpRight
+                      size={15}
+                      strokeWidth={2}
+                      aria-hidden="true"
+                      className="transition-transform duration-300 ease-(--ease-out) group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                    />
+                  </a>
+                  <p className="mt-2 flex flex-wrap items-center gap-x-2 pl-1 text-xs text-text-3">
+                    <span
+                      aria-hidden="true"
+                      className={`size-1.5 rounded-full ${s?.up ? "bg-ok" : "bg-warn"}`}
+                    />
+                    {s?.up ? "Online" : "Offline at last build"}
+                    {s ? (
+                      <>
+                        {" · checked "}
+                        <time dateTime={s.checkedAt}>
+                          {DATE.format(new Date(s.checkedAt))}
+                        </time>
+                      </>
+                    ) : null}
+                    {l.note ? <span>· {l.note}</span> : null}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+
         {w.summary ? (
           <p className="mt-8 max-w-2xl leading-relaxed text-text-2">
             {w.summary}
           </p>
         ) : null}
       </header>
+
+      {/* The moving preview — a recording from synthetic data in the frame
+          of what it is. Not an iframe: the live systems refuse framing. */}
+      <div className="border-b border-line px-5 py-10 sm:px-8 lg:px-12">
+        <div className="max-w-5xl">
+          <LivePreview
+            title={w.title}
+            platform={w.platform}
+            status={w.status}
+            host={webLink ? hostOf(webLink.href) : undefined}
+            media={media}
+          />
+        </div>
+      </div>
 
       <div className="grid gap-12 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,19rem)] lg:gap-16 lg:px-12">
         {/* Prose */}
@@ -161,6 +252,33 @@ export default async function CaseStudy({
                   Role
                 </dt>
                 <dd className="mt-1 text-sm text-text">{w.role}</dd>
+              </div>
+            ) : null}
+
+            {/* Live — cleared links only (lib/live.ts), each with the
+                status the build found. */}
+            {links.length ? (
+              <div>
+                <dt className="flex items-center gap-2 font-mono text-2xs uppercase tracking-widest text-text-3">
+                  <Globe size={14} strokeWidth={1.75} aria-hidden="true" />
+                  Live
+                </dt>
+                {links.map((l, i) => (
+                  <dd key={l.href} className="mt-1 text-sm">
+                    <a
+                      href={l.href}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-2 text-text underline decoration-line-2 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`size-1.5 shrink-0 rounded-full ${statuses[i]?.up ? "bg-ok" : "bg-warn"}`}
+                      />
+                      {hostOf(l.href)}
+                    </a>
+                  </dd>
+                ))}
               </div>
             ) : null}
 
