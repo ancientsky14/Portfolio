@@ -55,6 +55,18 @@ export function PanelFooter() {
           <p className="mt-5 font-mono text-2xs uppercase tracking-widest text-text-3">
             © {new Date().getFullYear()} {SITE.name} · Built in the Philippines
           </p>
+          <p className="mt-2 font-mono text-2xs uppercase tracking-widest text-text-3">
+            {SITE.credit.text}{" "}
+            <a
+              href={SITE.credit.href}
+              target="_blank"
+              rel="noopener"
+              className="underline decoration-line-2 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
+            >
+              {SITE.credit.name}
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          </p>
         </nav>
       </div>
     </footer>

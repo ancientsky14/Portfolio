@@ -42,4 +42,12 @@ export const SITE = {
 
   /** The one-line role under the name in the rail. */
   role: "Full-stack developer",
+
+  /** Design credit, shown in the footer. The layout follows Kenneth
+   *  Villar's portfolio (see CLAUDE.md, "Where the build is — V2"). */
+  credit: {
+    text: "Design inspired by",
+    name: "Kenneth Villar",
+    href: "https://portfolio.brewedops.cloud/",
+  },
 } as const;
