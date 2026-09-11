@@ -1,0 +1,279 @@
+# Portfolio — project instructions
+
+Personal portfolio for Jan Luigi Rivera. Positioning (changed 2026-09-10):
+**full-stack product developer — web apps, desktop apps, multi-site
+platforms**. Audience: businesses and startups, employers and recruiters, and
+any client including government — but government is *where he started*, not
+the niche. Lead with what was engineered, never with who bought it.
+
+Four case studies in `content/work/`, in this order: eBudget (Tauri desktop
+app), LMIS (legislative portal + CMS), SENTRO (open-source platform), eTracker
+(tracking portal). Facts in each were checked against the sibling repos in
+`D:\Dev\AI\Projects` on 2026-09-10.
+
+Next.js 16 · TypeScript · Tailwind v4 · GSAP · Three.js (Phase 5).
+
+## Read these first
+
+- `PHASE-1.md` — content and identity, and what's still blocked
+- `PHASE-2.md` — what the scaffold is and how it was verified
+- `PHASE-3.md` — the V1 landing sections, and the three gated on Jan
+- `PLAN-V2.md` — **the current plan.** The shell redesign, what was and was
+  not copied from the reference site, and the GSAP/three.js layer
+- `content/positioning.md` — the line, the proof strip, the voice rules
+- `design/tokens.css` — **the design contract**. Read before installing anything.
+
+## The rules that matter
+
+**Design contract.** Components come from three registries (Magic UI,
+Aceternity, 21st.dev), each shipping its own gradients, radii and easings.
+Every one gets re-pointed at `design/tokens.css` at install time. Six rules,
+restated at the top of that file:
+
+1. One accent (`--color-accent`). No component keeps its own gradient.
+2. Radii `0 / 6 / 12 / 20 / 28 / 999` — controls 12, cards 20, the outer
+   `.frame` containers 28. (Widened on purpose to match the reference shell.)
+3. One border: 1px `--color-line`. Only `.frame` gets a gradient edge.
+4. One shadow: `--shadow-soft` (`shadow-soft`), on cards and frames only,
+   plus the focus ring and the rail portrait's drop-shadow (`.portrait`).
+5. One easing (`--ease-out` / GSAP `expo.out`), three durations (`lib/motion.ts`).
+6. One showpiece per viewport.
+
+There is a **kill list** in `design/tokens.css` — twelve components that read
+instantly as "AI-generated portfolio". Don't install them.
+
+**Motion division of labour** (see `lib/motion.ts`):
+
+- GSAP owns scroll-scrubbed timelines, pinning, the hero sequence, SplitText,
+  DrawSVG, Flip.
+- `motion` owns whatever ships inside a library component — hover, mount.
+- **Never both on the same property of the same element.** To GSAP a library
+  component, wrap it in a plain `div` and animate the wrapper.
+- Smooth scroll is **Lenis, not ScrollSmoother**. ScrollSmoother transforms the
+  content element, which desynchronises native scroll from what the viewer sees
+  (breaking `motion`'s IntersectionObserver triggers) and makes `position: fixed`
+  children fix to the content rather than the viewport — which is where the
+  WebGL canvas lives. Do not switch this without re-reading that reasoning.
+
+**Truthfulness gates — do not work around these.**
+
+- `displayClient()` in `lib/content.ts` renders `clientAnonymous` until a case
+  study's frontmatter sets `clientCleared: true`. That boolean flips only when
+  there is written permission from the client. Never hardcode a client name.
+- `realMetrics()` drops any metric whose `value` is `null`. Never fill a null
+  metric with an estimate or a plausible-looking figure to make a section look
+  complete — cut the tile instead. A government buyer who catches one inflated
+  number discounts the whole site.
+- `<!-- NEEDS: ... -->` blocks in `content/work/*.mdx` mark things only Jan can
+  answer. Don't invent answers; leave them and say what's missing.
+- Case-study frontmatter also separates CONFIRMED / INFERRED / NEEDS in a
+  comment block at the top. INFERRED lines are guesses awaiting correction.
+
+**Accessibility is not a Phase 7 problem.** Every scroll animation needs a
+reduced-motion *end state*, written at the same time as the animation — not an
+absence of animation. Anything parked at `opacity: 0` waiting for a ScrollTrigger
+must be reset in the `gsap.matchMedia()` reduce branch.
+
+## Where the build is — V2
+
+The plan changed on 10 Sep 2026. V1 was a dark, ten-section landing scroll.
+V2 is a **light-first shell**: a persistent left rail and a scrolling panel,
+following the structure of portfolio.brewedops.cloud with Jan's own content
+and palette. Read `PLAN-V2.md` before changing layout or tokens.
+
+| | | Status |
+|---|---|---|
+| 1 | Content & identity | drafts in, NEEDS blocks open |
+| 2 | Foundations | **done** |
+| 3 | V1 landing | superseded — sections moved to routes |
+| R1 | Shell: rail, panel, mobile bar, theme | **done** |
+| R2 | Home: hero, tools marquee, bento | **done** |
+| R3 | Routes: work, services, lab, about, contact | **done** |
+| R4 | Motion: Lenis + GSAP | **done** |
+| R5 | Archipelago hero — three.js point cloud | **done** |
+| R6 | Pages export, socials + icons, MDX bodies, brief form, re-tokenized registry pieces | **done** |
+| R7 | Repositioning — product developer, eBudget added, drafts corrected | **done** |
+| R8 | Reference shell + components — panel scroll, work viewer, tab bar, intro | **done** |
+| R9 | Hardening — OG image, budgets on real Android, keyboard + contrast pass | ← next |
+
+### The shell
+
+- `app/layout.tsx` composes `Rail` (≥lg), `MobileBar` + `TabBar` (<lg), the
+  panel and `PanelFooter`. **On desktop the page never scrolls**: the rail and
+  the panel (`#panel`, `.panel-scroller`) are two independent scroll areas,
+  as on the reference. Below lg the window scrolls. Anything that listens to
+  scroll — Lenis, every ScrollTrigger, the hero canvas — must get its
+  scroller from `panelScroller()` in `lib/scroller.ts`, never assume the
+  window. Route changes reset the panel's scroll in `page-motion.tsx`.
+- **The home page does not scroll from 1100px wide and 600px tall** (`.home-fit` in
+  `design/tokens.css`): head, tools strip and bento fit the window, the
+  bento's two rows split the leftover height, and the panel is pinned via
+  `:has(.home-fit)` — no JS. Its footer is hidden there. Anything added to
+  the home page must fit that grid or it will be clipped.
+- Reference components (2026-09-11, Jan's request): the `/work` gallery with
+  its card → modal viewer, the mobile tab bar, and the first-visit boot
+  intro (`html.is-intro`, set by the boot script). The intro overrides the
+  "motion never delays the message" rule by Jan's decision — keep it gated
+  (session-once, reduced motion off) rather than widening it. A cursor ring
+  was built and then removed at Jan's request (2026-09-11); do not re-add.
+- The rail portrait (2026-09-11) is a transparent cutout, `public/avatar.webp`
+  (512², metadata stripped), with layered depth after the reference — glow,
+  drop-shadow, shoulder fade (`.portrait` in `design/tokens.css`) — and a
+  pointer tilt in `page-motion.tsx`. The original photo stays in gitignored
+  `tmp-shots/`; never commit it (EXIF). It is not a 3D model; do not add one.
+- Side padding is `px-5 sm:px-8 lg:px-12`, set by the section or by
+  `components/site/container.tsx`. Do not add horizontal padding elsewhere.
+- Light is the default theme. Dark lives under `.dark` on `<html>`, set
+  before paint by the inline script in the layout and toggled from the rail.
+- Nav is defined once, in `components/shell/nav-links.ts`.
+
+### Motion
+
+All of it is in `components/motion/page-motion.tsx`, mounted once. Pages stay
+Server Components and opt in with attributes:
+
+- `data-reveal` — rises and fades on entry
+- `data-reveal-group` — direct children, staggered
+- `data-reveal-depth` — on a group: children also scale up from 0.94
+- `data-split` — a heading whose lines rise through a mask on load (SplitText)
+- `data-tilt-card` / `data-tilt-icon` — the card tilts and lifts toward the
+  pointer; its icon tile turns
+- `data-magnetic` — a button pulled a few px toward the cursor
+- `#process-spine` (/services) — drawn as the panel scrolls (DrawSVG)
+- `data-flow` — a diagram whose `[data-flow-path]` connectors carry travelling
+  dots (MotionPath), pulsing the `[data-flow-node]` each reaches; still under
+  reduced motion. /services content (method, services, the eBudget update flow)
+  lives in `lib/services.ts` with a receipt per line.
+
+Page transitions (2026-09-11): an internal link click fades the page out
+while the background scatters (`BG_EVENT` in `lib/motion.ts`), then
+navigates; the new page rises in as the field regathers. Hovering a tilt
+card or magnetic button makes the islands lean toward it, and a fast scroll
+ripples them. Tilt, magnetic and attract are fine-pointer only. Under
+reduced motion none of it runs, the spine is fully drawn and every element
+is in its end state.
+
+Do not add `"use client"` to a section just to animate it. If a section needs
+motion the attributes cannot express, animate it from `page-motion.tsx` with
+a selector, or wrap it in a plain `div` and animate the wrapper.
+
+### The archipelago background
+
+`components/hero/archipelago.tsx` is the gate; `archipelago-canvas.tsx` is
+raw three.js (no react-three-fiber). It does not mount under reduced motion,
+absent WebGL, Save-Data, 2g, or <4GB device memory. Since 2026-09-11 (Jan's
+request) it is the background of every page: mounted once in `app/layout.tsx`
+as a fixed, full-window `-z-10` layer behind the shell; the island chain sits
+on the right (behind the bento) at low opacity, centred on phones, with a thin
+dust across the window; pointer repulsion read from the window, and a gentle drift
+with the panel's scroll. Without it the page is the plain ground; the hero
+keeps its colour wash. The islands are procedural
+and are **not** a map of the Philippines — see the header comment in
+`lib/archipelago.ts` before changing that.
+
+## Conventions
+
+- Server Components by default; `"use client"` only where interaction requires it.
+- Side padding is set once, in `components/site/container.tsx`. Don't add
+  horizontal padding elsewhere.
+- Type scale and colours come from tokens — no arbitrary Tailwind values like
+  `text-[17px]` or `bg-[#111]`.
+- `three` is installed and reaches the browser **only** through the dynamic
+  import in `components/hero/archipelago.tsx`. Never import it anywhere that
+  the main bundle can reach. `@react-three/fiber` and `@react-three/drei` are
+  deliberately not installed — one point cloud does not need a reconciler.
+
+## Deployment — GitHub Pages (static export)
+
+`next.config.ts` sets `output: "export"`, `trailingSlash: true` and a
+`basePath` from `NEXT_PUBLIC_BASE_PATH` (`/Portfolio` in CI, empty locally).
+`.github/workflows/deploy.yml` builds and publishes on every push to `main`.
+
+What that rules out — do not add any of these: Route Handlers, Server
+Actions, `resend`, cookies, redirects/rewrites/headers, ISR, `next/image`
+optimisation, dynamic routes without `generateStaticParams`. Metadata routes
+(`sitemap.ts`, `robots.ts`) need `export const dynamic = "force-static"`.
+
+The contact form (`components/contact/brief-form.tsx`) composes an email in
+the visitor's own mail client — it posts nowhere.
+
+### Case-study bodies — a second truthfulness gate
+
+`app/work/[slug]` renders the MDX body through `prepareBody()` in
+`lib/mdx.ts`, which strips `<!-- NEEDS -->` (a hard MDX syntax error) and the
+`{/* */}` ledger, and drops headings left empty. `bodyVisibility()` then:
+renders in `next dev` under a draft banner; renders in production **only**
+when the frontmatter has `bodyReviewed: true`. Never set that flag on
+Jan's behalf — the drafts contain INFERRED prose.
+
+### Registry components
+
+Magic UI Dot Pattern → `components/ui/dot-pattern.tsx`, Magic UI Scroll
+Progress → `components/ui/scroll-progress.tsx` + CSS, Aceternity Card
+Spotlight → `[data-spotlight]` + one listener in `page-motion.tsx`. Each was
+rewritten against the tokens rather than installed with `shadcn add` — the
+CLI edits `app/globals.css`, and the originals carried their own gradients,
+per-dot DOM nodes, or a react-three-fiber dependency. The header comment in
+each file says what changed. Do the same for anything added later.
+
+### Socials and icons
+
+`lib/socials.ts` is the one list (GitHub, LinkedIn, Facebook, Discord);
+`components/shell/social-links.tsx` renders it. Brand marks come from
+`@icons-pack/react-simple-icons` (LinkedIn inlined — it is not in Simple
+Icons), UI icons from `lucide-react`. All render in `currentColor`: one
+accent, never brand colours — except the home tools marquee, which Jan asked
+to show each tool in its own colours (2026-09-11): `<ToolIcon brand>`, with
+official marks for Simple Icons' gaps in `public/icons/tools/` (devicon and
+lobehub icons, both MIT).
+
+## Commands
+
+```bash
+npm run dev
+npm run typecheck
+npm run build
+```
+
+## Budgets (Phase 7, but design toward them)
+
+LCP < 2.0s on 4G / mid-range Android · CLS < 0.05 · INP < 200ms ·
+main JS < 200KB gzip · three chunk < 500KB lazy · Lighthouse ≥ 95 perf, 100 a11y.
+
+Test on a real mid-range Android on a throttled connection, not a laptop. The
+buyers open this outside Metro Manila on mobile data.
+
+## Open questions
+
+Resolved 2026-09-10 from the repos: LMIS = Legislative Management Information
+System; BarangayOS author and MIT licence verified in `sentro/LICENSE`; SENTRO
+status = in development (sync engine is roadmap Phase 2, not built — never
+claim it works offline).
+
+Resolved 2026-09-11 by Jan: headline signed off; contact email and
+availability wording confirmed; MGB RO1 and Santol may be named
+(`clientCleared: true` on eBudget, eTracker, LMIS); eBudget does **not** work
+offline since the Postgres move (metric cut — never claim it).
+
+Changed later on 2026-09-11 by Jan: the ownership step and the "working
+session before a price" step are removed. **Do not state ownership or
+payment terms anywhere on the site.** The process is four steps (fixed
+scope, staging link, training, updates after launch), the home card is
+"Updates", and sector labels are neutral — the Built for strip says
+"Client", not a government sector.
+
+Still open:
+1. Why the Vercel → Cloudflare Workers move, with numbers if available?
+2. `public/avatar.jpg` and `public/cv.pdf`.
+3. Any testimonial at all — if none, keep the section cut rather than fake it.
+4. Case-study bodies: `bodyReviewed: true` only once Jan has read each draft.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

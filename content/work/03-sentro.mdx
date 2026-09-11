@@ -1,0 +1,126 @@
+---
+slug: sentro
+title: "SENTRO"
+subtitle: "A single-barangay system, re-engineered into a platform"
+client: "Own product"
+clientCleared: true
+sector: "Multi-site platform"
+year: 2026
+role: "Architect and developer"
+platform: "Platform"
+status: "In development"
+# Stack corrected 2026-09-10 against the sentro repo — it is not Next.js.
+stack: ["React 19", "TypeScript", "Vite", "PocketBase", "Docker"]
+upstream:
+  name: "BarangayOS"
+  author: "Rodney Dela Cruz" # VERIFIED 2026-09-10 against sentro/LICENSE
+  licence: "MIT" # VERIFIED 2026-09-10 against sentro/LICENSE
+featured: true
+order: 3
+summary: >-
+  An open-source platform built on a fork of the MIT-licensed BarangayOS, being
+  re-architected from one system for one barangay into a multi-tier platform.
+  Done so far: records, case tracking, finance, role-based access and cloud
+  multi-tenancy with server-enforced isolation. Next: the sync engine that lets
+  offline barangay nodes feed a central instance.
+metrics:
+  - label: "Licence"
+    value: "MIT"
+  - label: "Roadmap phases done"
+    value: "1 of 6"
+  # "Works offline: Fully" was removed on 2026-09-10: the sync engine is
+  # roadmap Phase 2 and not built yet. Put it back only when it is.
+---
+
+{/*
+  ────────────────────────────────────────────────────────────────
+  DRAFT — Phase 1
+
+  CONFIRMED (from you):
+    · fork/derivative of BarangayOS (MIT, by Rodney Dela Cruz)
+    · re-engineers a single-barangay system into a multi-tier platform
+    · cloud instance for city/municipal hall oversight
+    · offline-capable per-barangay nodes that sync upward
+    · named SENTRO
+
+  NEEDS — before this page goes public:
+    · VERIFY the upstream attribution against the actual LICENSE file. I could not
+      reach barangayos.com to confirm (403). Getting an open-source attribution wrong
+      on a public portfolio is a real reputational cost, and it is a two-minute check.
+    · current status — in development, pilot, or deployed anywhere
+    · the sync model specifics (see below)
+    · whether SENTRO is a product you intend to sell, or a platform you deploy per client
+  ────────────────────────────────────────────────────────────────
+*/}
+
+## What it is
+
+Every barangay hall in the Philippines keeps the same records — residents, certificates,
+blotter entries, clearances — and almost every software attempt at it builds one system
+for one barangay. That works until the city or municipality above it wants to see across
+all of them, which is the moment the model breaks.
+
+SENTRO inverts that. Each barangay runs its own node that works with no connection at
+all. A cloud instance sits above them for the city or municipal hall. Records sync
+upward when there is a link, and the barangay keeps working when there isn't.
+
+## Why fork rather than start over
+
+BarangayOS is a genuinely good single-barangay system, released under a permissive
+licence by its author. Rewriting from zero would have meant re-solving the domain — what
+a barangay clearance actually needs on it, how a blotter entry is structured, what the
+certificate templates have to say — which is the part that takes local knowledge and
+takes the longest to get right.
+
+The domain modelling was worth keeping. The single-tenant, single-location architecture
+was not.
+
+<!-- NEEDS: name the upstream properly here in prose, with a link, and state the licence.
+     Something like: "SENTRO is a derivative of BarangayOS by <author>, used under the
+     MIT licence." Verify both before publishing. -->
+
+## The architectural problem
+
+The interesting constraint is not the data model. It is that the network is not a given.
+
+<!-- NEEDS: your actual answers. These are the questions a technical reader will have,
+     and the ones that make this the strongest case study on the site:
+
+       1. What is the unit of sync? Whole records, or an operation log?
+       2. How do you resolve conflicts when a barangay and the hall both edited the
+          same resident while disconnected? Last-writer-wins, CRDT, or
+          barangay-always-wins-on-its-own-residents?
+       3. What is authoritative? Is the barangay node the source of truth for its own
+          residents, with the cloud as a read model? (If so, say that — it's a clean
+          answer and it maps to how the institution actually works.)
+       4. Identity — how does a barangay node authenticate upward without a connection
+          at enrolment time?
+       5. What happens when a node is offline for a month?
+
+     Answer 2 and 3 in prose even if the implementation isn't finished. The reasoning is
+     the interesting part, and being open about what is still undecided reads as
+     confidence, not weakness.
+-->
+
+## What it changes for the buyer
+
+- A municipal hall gets oversight across its barangays without each barangay needing a
+  reliable connection.
+- A barangay hall keeps issuing clearances during an outage, which is when residents
+  most need them.
+- Onboarding a new barangay is adding a node, not standing up a new system.
+
+## Status
+
+<!-- NEEDS: where this actually is, stated exactly. Do not imply a deployment that
+     hasn't happened. -->
+
+## What I'd do differently
+
+<!-- NEEDS: yours. For a project still in flight, the honest version of this block is
+     "what I already know I got wrong" — a schema decision, a sync assumption, a scope
+     choice. -->
+
+---
+
+

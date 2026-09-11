@@ -1,0 +1,139 @@
+---
+slug: santol-lmis
+title: "LMIS"
+subtitle: "Legislative portal and role-based CMS, across three surfaces"
+client: "Municipality of Santol, La Union"
+clientCleared: true # cleared for naming by Jan, 2026-09-11
+clientAnonymous: "A municipality in La Union"
+sector: "Legislative records"
+platform: "Web"
+status: "In production"
+year: 2026
+role: "Sole developer — design, build, migration, maintenance"
+stack:
+  ["Next.js 16", "TypeScript", "Supabase", "PostgreSQL", "Cloudflare Workers"]
+deployments: ["lmis", "lmis-staff", "lmis-admin"]
+featured: true
+order: 2
+summary: >-
+  A Legislative Management Information System: a public portal for ordinances,
+  council sessions and transparency records, an admin CMS with role-based access,
+  and a separate staff intranet — three surfaces over one Supabase project.
+  Migrated off Vercel onto Cloudflare Workers mid-life.
+metrics:
+  - label: "Residents served"
+    value: null # NEEDS
+  - label: "Surfaces in production"
+    value: 3
+  - label: "Barangays covered"
+    value: null # NEEDS — Santol has 12 barangays; confirm the system covers all
+---
+
+{/*
+  ────────────────────────────────────────────────────────────────
+  DRAFT — Phase 1
+
+  CONFIRMED (from you):
+    · three Santol LGU surfaces — public, staff, admin
+    · deployed as lmis / lmis-staff / lmis-admin
+    · moved from Vercel to Cloudflare Workers
+    · Next.js 16 + Supabase
+
+  CONFIRMED (read from the santol-municipal-portal repo, 2026-09-10):
+    · LMIS = Legislative Management Information System (site footer)
+    · surfaces: public portal, staff admin CMS (superadmin / admin / editor /
+      uploader), and an internal staff intranet on its own hostname
+    · public modules: ordinances and resolutions, SB sessions and minutes,
+      document repository, transparency portal, records archive, feedback
+
+  INFERRED — correct or delete:
+    · the "before" state
+    · that the migration was driven by cost/edge reach
+
+  NEEDS:
+    · the real reason for the Vercel → Workers move
+    · every number in `metrics`
+  ────────────────────────────────────────────────────────────────
+*/}
+
+## What it is
+
+One system, three front doors. The public gets a portal for ordinances, council
+sessions and transparency records. The staff who publish get an admin CMS with
+role-based access. Everyone inside the office gets an intranet on its own hostname.
+Same data, three deployments, three very different definitions of "usable."
+
+## Before
+
+<!-- NEEDS: the real starting point. Prompts:
+       · what did a resident do before to request a document?
+       · what did counter staff use — paper forms, an existing system, Excel?
+       · where did the municipality's authoritative resident data live?
+-->
+
+## Constraints
+
+- **Three audiences with nothing in common.** A resident on a phone with one bar and a
+  clerk on a decade-old desktop cannot be served by the same interface. Trying to do it
+  in one app is how these projects turn into something nobody uses.
+- **Connectivity.** Santol is a fourth-class inland municipality in La Union. Designing
+  for Makati bandwidth would have produced a system that fails exactly when the office
+  is busiest.
+- **Municipal budget.** Hosting cost is a recurring line item that has to survive an
+  annual budget review, which makes predictable near-zero cost worth more than raw speed.
+- **Staff turnover.** Same constraint as every LGU engagement: the system has to be
+  learnable by the next person without me.
+
+## What I built
+
+Three separately deployed Next.js applications over one shared Supabase project, with
+Postgres row-level security as the boundary between them — the public surface physically
+cannot read what only the admin surface should see, because the database refuses, not
+because the UI hides a button.
+
+Splitting the deployments rather than gating routes inside one app means the public
+surface stays small and fast, and a change to the admin tooling cannot take the
+resident-facing site down. It also means each surface can be scaled, cached, and
+rolled back on its own.
+
+<!-- NEEDS: architecture diagram. Three boxes → one Supabase. Mark the RLS boundary.
+     This is the diagram that makes the whole case study land, so it's worth doing well. -->
+
+### The migration
+
+Originally deployed on Vercel, later moved to Cloudflare Workers.
+
+<!-- NEEDS: the honest reason. Whatever it actually was — cost, edge presence closer to
+     PH users, egress, the free tier, a limit you hit — say it plainly with the number
+     attached if you have it. "We moved for cost and it went from $X to $Y" is one of
+     the most credible sentences you can put on a portfolio, because almost nobody
+     publishes it. If it was mostly cost, say mostly cost. -->
+
+The move was not free — Next on Workers constrains what runtime features you can use,
+and some of the build had to change to fit.
+
+<!-- NEEDS: name one thing that actually had to change. This detail is what proves you
+     did the migration rather than read about it. -->
+
+## Numbers
+
+<!-- NEEDS: fill the frontmatter metrics. Best available candidates here:
+       · documents issued through the public surface since launch
+       · average counter transaction time, before vs after
+       · monthly hosting cost, before vs after the migration ← publish this one if the
+         municipality is fine with it; it is unusually persuasive to a budget officer
+-->
+
+## Handover and maintenance
+
+I maintain it after launch: fixes, updates and new features across all three surfaces.
+
+<!-- NEEDS: documentation and training specifics. Who did you train, how many, what did
+     you leave behind in writing? -->
+
+## What I'd do differently
+
+<!-- NEEDS: yours. The obvious honest answer here is about the hosting decision — you
+     shipped on one platform and moved. Was that avoidable at the start, or was it the
+     right call given what you knew then? Either answer is good. Saying it was avoidable
+     and explaining what you'd evaluate now is better than defending it. -->

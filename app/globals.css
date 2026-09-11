@@ -1,0 +1,4 @@
+/* The single stylesheet entry. Tokens live in design/tokens.css so the
+   design contract sits next to the plan rather than buried in app/.
+   Add nothing here that belongs in a component. */
+@import "../design/tokens.css";

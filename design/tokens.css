@@ -1,0 +1,978 @@
+/* ───────────────────────────────────────────────────────────────
+   Design tokens — Phase 1
+   Tailwind v4, CSS-first config.
+
+   This file is the contract. Every component installed from
+   Magic UI, Aceternity or 21st.dev gets re-pointed at these
+   tokens before it ships. If a component arrives with its own
+   gradient, radius or easing, that is a bug to fix at install
+   time, not a style to keep.
+
+   THE SIX RULES
+     1. One accent. --color-accent. No component keeps its own.
+     2. Radii: 0 / 6 / 12 / 20 / 28 / 999. Controls 12, cards 20, the
+        outer frames 28. Nothing invents another. (Widened in v2.1 to
+        match the reference shell's softer, larger cards.)
+     3. Borders: 1px, --color-line. The one exception is `.frame`'s
+        gradient edge.
+     4. One shadow: --shadow-soft, on cards and frames only — plus the
+        focus ring, and the cutout portrait's drop-shadow (`.portrait`).
+   Nothing else casts a shadow.
+     5. One easing (--ease-out) and three durations. Override
+        library defaults to match.
+     6. One showpiece per viewport.
+
+   KILL LIST — do not install:
+     Meteors · Shooting Stars · Vortex · Sparkles Text · Confetti
+     Background Beams with Collision · Smooth Cursor · Typewriter
+     Effect · Glowing Stars · Aurora Background · Wavy Background
+     Rainbow Button
+   ─────────────────────────────────────────────────────────────── */
+
+@import "tailwindcss";
+
+/* Explicit source globs — this file lives in design/, so Tailwind's
+   automatic detection would otherwise start from the wrong place. */
+@source "../app";
+@source "../components";
+@source "../content";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* For a container that scrolls but should never show a scrollbar doing it —
+   the rail, when it is taller than the window. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* The panel — the page's own scroll area on desktop (app/layout.tsx), after
+   the reference shell. Thin, quiet scrollbar; scrolling does not chain to
+   the page behind it. Its scroll timeline is named so the fixed progress
+   bar, which lives outside it, can follow it — `timeline-scope` on body is
+   what makes the name visible that far. Below lg it is an ordinary block
+   and the window scrolls instead. */
+body {
+  timeline-scope: --panel;
+}
+
+@layer components {
+  @media (min-width: 64rem) {
+    .panel-scroller {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      scroll-timeline: --panel block;
+      scrollbar-width: thin;
+      scrollbar-color: var(--line-2) transparent;
+    }
+    .panel-scroller::-webkit-scrollbar {
+      width: 8px;
+    }
+    .panel-scroller::-webkit-scrollbar-thumb {
+      background: var(--line-2);
+      border-radius: var(--radius-full);
+    }
+  }
+}
+
+/* ── Light is the primary theme (v2). ──────────────────────────────
+   The v1 direction was dark-first. The redesign is built on a bright,
+   paper-like ground — the reference layout it follows is a light shell,
+   and an institutional buyer reads light as "official document" rather
+   than "developer tool". Dark ships as an alternate under `.dark`, not
+   as the default.
+   ──────────────────────────────────────────────────────────────── */
+:root {
+  /* surfaces — paper, green-biased, never pure white or pure grey */
+  --ground: #f3f6f2;
+  --surface: #ffffff;
+  --surface-2: #e9efeb;
+
+  /* glass — the translucent card in the shell panel. One treatment,
+     used only on `.glass`. Never a second blur elsewhere. */
+  --glass: color-mix(in oklab, #ffffff 72%, transparent);
+  --glass-line: color-mix(in oklab, #0b6e5c 14%, transparent);
+
+  /* text */
+  --text: #0f1f1a;
+  --text-2: #3d524b;
+  --text-3: #6d827a;
+
+  /* lines */
+  --line: #d5e0da;
+  --line-2: #b7c7bf;
+
+  /* accent — jade. The only accent. */
+  --accent: #0b6e5c;
+  --accent-ink: #ffffff; /* text ON accent */
+  --accent-soft: #daeee7;
+
+  /* secondary — sand. Warmth in the hero ramp and the outer islands
+     of the Archipelago point cloud. Never a second accent for UI. */
+  --sand: #b3813f;
+
+  /* semantic — separate from accent, used only for state */
+  --ok: #0b6e5c;
+  --warn: #8f5606;
+  --danger: #a83c28;
+}
+
+.dark {
+  --ground: #0a100e;
+  --surface: #111a17;
+  --surface-2: #17211e;
+
+  --glass: color-mix(in oklab, #111a17 70%, transparent);
+  --glass-line: color-mix(in oklab, #45d6ac 18%, transparent);
+
+  --text: #e2ece7;
+  --text-2: #a7bab3;
+  --text-3: #788c85;
+
+  --line: #212f2b;
+  --line-2: #32433d;
+
+  --accent: #45d6ac;
+  --accent-ink: #06201a;
+  --accent-soft: #0e2f27;
+
+  --sand: #e8c08a;
+
+  --ok: #45d6ac;
+  --warn: #e0a44a;
+  --danger: #e8705c;
+}
+
+@theme inline {
+  /* colors → utilities: bg-ground, text-text-2, border-line, … */
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-glass: var(--glass);
+  --color-glass-line: var(--glass-line);
+
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-sand: var(--sand);
+
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+
+  /* type — display / body / mono.
+     The three --font-* variables on the right are generated by
+     next/font in app/layout.tsx. */
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  /* type scale — 1.26 ratio. Stay on it. */
+  --text-2xs: 0.6875rem; /* 11px  — mono labels, eyebrows */
+  --text-xs: 0.8125rem; /* 13px  — captions */
+  --text-sm: 0.9375rem; /* 15px  — secondary body */
+  --text-base: 1.0625rem; /* 17px  — body */
+  --text-lg: 1.3125rem; /* 21px  — lead */
+  --text-xl: 1.6875rem; /* 27px  — h3 */
+  --text-2xl: 2.25rem; /* 36px  — h2 */
+  --text-3xl: 3rem; /* 48px  — h1 */
+  --text-4xl: 4.25rem; /* 68px  — hero only */
+
+  /* radii — four values, no more */
+  --radius-none: 0px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* the one shadow — soft, low, tinted by the ink so it works in both
+     themes. Cards and frames only. */
+  --shadow-soft:
+    0 1px 2px color-mix(in oklab, var(--text) 5%, transparent),
+    0 10px 28px -14px color-mix(in oklab, var(--text) 22%, transparent);
+  --radius-full: 999px;
+
+  /* motion — one easing, three durations. Mirrored in lib/motion.ts */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* The one overshoot — overlays opening (the work viewer), after the
+     reference's spring. Nothing that moves with scroll uses it. */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  .dark {
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--text);
+  }
+
+  /* the only box-shadow in the codebase */
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 45%, transparent);
+    border-radius: var(--radius-sm);
+  }
+
+  /* Every animation needs a reduced-motion END STATE, not just an
+     absence of animation. Anything parked at opacity:0 waiting for a
+     ScrollTrigger must be reset by the matchMedia branch in the
+     component, not only by this blanket rule. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ── Component classes ────────────────────────────────────────────
+   Only things a utility cannot express: keyframes, and the masks that
+   need two gradients. Everything else stays in the markup.
+   ──────────────────────────────────────────────────────────────── */
+
+@keyframes marquee-x {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@layer components {
+  /* The track holds the item list twice; translating it exactly -50%
+     lands the copy where the original began, so the loop is seamless. */
+  .marquee-track {
+    animation: marquee-x 42s linear infinite;
+    will-change: transform;
+  }
+
+  .marquee:hover .marquee-track,
+  .marquee:focus-within .marquee-track {
+    animation-play-state: paused;
+  }
+
+  /* Fade both ends into the card rather than cutting the words off. */
+  .marquee-mask {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 8%,
+      #000 92%,
+      transparent
+    );
+  }
+
+  /* Reduced motion gets a static, readable row — not a hidden one. The
+     end state matters more than the absence of the animation. */
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+      transform: none;
+    }
+  }
+
+  /* Scroll progress — a 2px accent bar driven by the page's own scroll
+     timeline. No JS. Browsers without scroll-driven animations never see
+     it, which is the correct failure: it is decoration. */
+  .scroll-progress {
+    display: none;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .scroll-progress {
+      display: block;
+      position: fixed;
+      inset-inline: 0;
+      top: 0;
+      z-index: 60;
+      height: 2px;
+      background: var(--accent);
+      transform-origin: 0 50%;
+      transform: scaleX(0);
+      animation: scroll-progress linear both;
+      animation-timeline: scroll(root block);
+    }
+
+    /* On desktop the page does not scroll — the panel does. Follow its
+       named timeline (`.panel-scroller`) instead of the root's. */
+    @media (min-width: 64rem) {
+      .scroll-progress {
+        animation-timeline: --panel;
+      }
+    }
+  }
+
+  /* Spotlight — a soft accent wash that follows the pointer across a card.
+     --mx / --my are written by the one delegated listener in
+     components/motion/page-motion.tsx. The card's own background paints
+     first; ::before sits between it and the content because the card is
+     its own stacking context. */
+  [data-spotlight] {
+    position: relative;
+    isolation: isolate;
+  }
+
+  [data-spotlight]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+      340px circle at var(--mx, 50%) var(--my, 50%),
+      color-mix(in oklab, var(--accent) 13%, transparent),
+      transparent 72%
+    );
+    transition: opacity 0.4s var(--ease-out);
+  }
+
+  [data-spotlight]:hover::before {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-progress {
+      display: none;
+    }
+  }
+}
+
+@keyframes scroll-progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ── Frame — the soft outer container ──────────────────────────────
+   The reference shell wraps its tools strip and its bento in a pale
+   panel with a glowing edge. Here the edge is a gradient border drawn
+   with two backgrounds (fill on padding-box, gradient on border-box), so
+   it costs no extra element and no second border. The fill must stay
+   opaque or the gradient shows through. */
+@layer components {
+  .frame {
+    border: 1px solid transparent;
+    border-radius: var(--radius-xl);
+    background:
+      linear-gradient(
+          color-mix(in oklab, var(--surface-2) 50%, var(--ground)),
+          color-mix(in oklab, var(--surface-2) 50%, var(--ground))
+        )
+        padding-box,
+      linear-gradient(
+          135deg,
+          color-mix(in oklab, var(--accent) 38%, var(--line)),
+          var(--line) 45%,
+          color-mix(in oklab, var(--sand) 34%, var(--line))
+        )
+        border-box;
+    box-shadow: var(--shadow-soft);
+  }
+}
+
+/* ── Visitor accessibility preferences ─────────────────────────────
+   Set by components/shell/a11y-panel.tsx, applied before first paint by
+   the boot script in app/layout.tsx. Every size on the site is in rem,
+   so scaling the root scales the whole interface, not just body copy. */
+html.a11y-text-1 {
+  font-size: 106.25%;
+}
+html.a11y-text-2 {
+  font-size: 112.5%;
+}
+
+/* High contrast: the muted greys are where contrast always fails, so they
+   are the ones pulled up. Wins over `.dark` by specificity, so it works in
+   both themes. */
+html.a11y-contrast {
+  --text-2: var(--text);
+  --text-3: color-mix(in oklab, var(--text) 80%, var(--ground));
+  --line: var(--line-2);
+  --glass: var(--surface);
+}
+
+html.a11y-reduce-motion,
+html.a11y-reduce-motion *,
+html.a11y-reduce-motion *::before,
+html.a11y-reduce-motion *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+html.a11y-reduce-motion .marquee-track {
+  animation: none !important;
+  transform: none !important;
+}
+html.a11y-reduce-motion .scroll-progress {
+  display: none !important;
+}
+
+/* ── Work viewer (components/work/work-gallery.tsx) ────────────────
+   Backdrop fades, the stage springs up. While it is open the panel is
+   pinned (`data-fixed`) so the page behind cannot scroll. */
+@media (min-width: 64rem) {
+  .panel-scroller[data-fixed="true"] {
+    overflow: hidden;
+  }
+}
+
+@keyframes gallery-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes gallery-stage {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+}
+.gallery-modal {
+  animation: gallery-fade 0.3s var(--ease-out) both;
+}
+.gallery-modal__stage {
+  animation: gallery-stage 0.42s var(--ease-spring) both;
+}
+
+/* ── Boot intro (components/motion/boot-intro.tsx) ─────────────────
+   `html.is-intro` is set before paint by the boot script in
+   app/layout.tsx on the first visit of a session (never under reduced
+   motion). While it is set, the overlay shows and the marked parts of the
+   site wait in their start positions; removing it lets them transition in. */
+.boot {
+  display: none;
+}
+html.is-intro .boot {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: var(--ground);
+  pointer-events: none;
+  transition: opacity 0.45s var(--ease-out);
+}
+html.is-intro-out .boot {
+  opacity: 0;
+}
+.boot__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+.boot__mark {
+  width: 7.5rem;
+  height: auto;
+  overflow: visible;
+}
+.boot__node {
+  fill: var(--accent);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: boot-pop 0.5s var(--ease-spring) both;
+}
+.boot__node--2 {
+  animation-delay: 0.12s;
+}
+.boot__node--3 {
+  animation-delay: 0.24s;
+}
+.boot__node--sand {
+  fill: var(--sand);
+}
+.boot__cable {
+  fill: none;
+  stroke: var(--line-2);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 80;
+  stroke-dashoffset: 80;
+  animation: boot-draw 0.6s var(--ease-out) 0.18s forwards;
+}
+.boot__cable--2 {
+  animation-delay: 0.3s;
+}
+.boot__name {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.boot__word {
+  display: inline-block;
+  overflow: hidden;
+  padding: 0.1em 0.12em 0.06em;
+  vertical-align: bottom;
+}
+.boot__word-in {
+  display: inline-block;
+  transform: translateY(115%);
+  animation: boot-rise 0.62s var(--ease-out) both;
+}
+.boot__role {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  opacity: 0;
+  animation: gallery-fade 0.5s var(--ease-out) 0.6s reverse both;
+}
+@keyframes boot-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+@keyframes boot-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes boot-rise {
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* What waits behind the overlay, and how it arrives. Only elements GSAP
+   does not animate carry `data-intro`, so the two never fight over the
+   same transform. */
+[data-intro="rail"] > *,
+[data-intro="rise"],
+[data-intro="tabbar"] {
+  transition:
+    opacity 0.62s var(--ease-out),
+    transform 0.76s var(--ease-out);
+}
+[data-intro="rail"] > :nth-child(2) {
+  transition-delay: 0.06s;
+}
+[data-intro="rail"] > :nth-child(3) {
+  transition-delay: 0.12s;
+}
+[data-intro="rail"] > :nth-child(4) {
+  transition-delay: 0.18s;
+}
+[data-intro="rise"] {
+  transition-delay: 0.14s;
+}
+[data-intro="tabbar"] {
+  transition-delay: 0.26s;
+}
+html.is-intro [data-intro="rail"] > * {
+  opacity: 0;
+  transform: translateX(-16px);
+}
+html.is-intro [data-intro="rise"] {
+  opacity: 0;
+  transform: translateY(14px);
+}
+html.is-intro [data-intro="tabbar"] {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+/* ── Home fits the window (≥ 1100px) ──────────────────────────────
+   After the reference: from 1100px wide the home page is not a scrolling
+   page but one screen — head, tools strip, and a bento that takes whatever
+   height is left, its two rows splitting it evenly and its cards shrinking
+   to fit. The panel is pinned only while `.home-fit` is inside it (`:has`,
+   no JS), so every other route still scrolls, and the work viewer's own
+   `data-fixed` lock can never un-pin it. No footer here: the copyright
+   lives in the rail. Sizes follow the reference's clamp()s.
+
+   Unlayered on purpose — it has to win over the Tailwind utilities on the
+   same elements, which live in a cascade layer. Below 1100px none of this
+   applies and home scrolls like any page — nor below 600px tall (a
+   landscape tablet, a squat browser window), where a fitted bento would be
+   slivers; there the page scrolls instead. */
+@media (min-width: 68.75rem) and (min-height: 37.5rem) {
+  .panel-scroller:has(.home-fit) {
+    overflow: hidden;
+  }
+  .panel-scroller:has(.home-fit) .panel-footer {
+    display: none;
+  }
+  /* The height chain. Flex items default to `min-height: auto` — never
+     smaller than their content — so without this the panel's wrapper and
+     <main> grow to fit the bento and the leftover-height row stops meaning
+     anything: the bottom cards run off the screen. */
+  .panel-scroller:has(.home-fit) > div {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  .panel-scroller:has(.home-fit) main {
+    min-height: 0;
+  }
+
+  .home-fit {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    display: grid;
+    /* The column MUST be pinned to the panel's width. Left `auto`, it
+       sizes to its widest child's min-content — and the tools marquee
+       track is `w-max` (the list twice, for the loop), thousands of px —
+       so the whole home grew off the right edge. */
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: clamp(12px, 2.2vh, 30px);
+    padding-block: clamp(20px, 4.5vh, 56px) clamp(14px, 2.6vh, 28px);
+  }
+  .home-fit > section {
+    min-width: 0;
+    padding-block: 0;
+  }
+
+  .home-fit__title {
+    /* Capped by height as well as width: on a wide, short window (1366×650)
+       a width-only size let the head take a third of the screen and the
+       bento lost its media. At 1280×800 and 1920×1080 the vw term still wins. */
+    font-size: clamp(28px, min(3.4vw, 6vh), 68px);
+    line-height: 1.04;
+  }
+  .home-fit__lede {
+    margin-top: clamp(10px, 1.8vh, 22px);
+    font-size: clamp(14px, min(1.05vw, 2.2vh), 20px);
+  }
+  .home-fit__mail {
+    display: none;
+  }
+
+  /* Every 1100px switch lives in THIS block, never in a Tailwind
+     `min-[1100px]:` class. Tailwind v4 cannot reliably order an arbitrary
+     px breakpoint against its rem-based named ones, so
+     `min-[1100px]:grid-cols-4` was emitted before `md:grid-cols-2` and
+     lost — six cards crushed into two columns. This block is unlayered, so
+     it beats the utilities on the same elements outright. */
+  .home-fit__head {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: clamp(20px, 4vw, 56px);
+  }
+
+  .home-fit__show {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .home-fit__show > .frame {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+  }
+  .home-fit__grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: clamp(10px, 1vw, 16px);
+  }
+  .home-fit__card {
+    min-height: 0;
+    overflow: hidden;
+    padding: clamp(14px, 1.8vh, 24px);
+  }
+  .home-fit__card-title {
+    /* Floors at 12px: between 1100 and ~1280px the four columns are only
+       ~150px wide, and a 17px uppercase "OWNERSHIP" spilled out of its card. */
+    font-size: clamp(12px, 0.95vw, 17px);
+    letter-spacing: 0.04em;
+  }
+  .home-fit__card-desc {
+    margin-top: clamp(6px, 1vh, 12px);
+    font-size: clamp(11.5px, 0.8vw, 14px);
+  }
+  .home-fit__card-media {
+    min-height: 0;
+    overflow: hidden;
+    margin-top: clamp(8px, 1.4vh, 16px);
+  }
+}
+
+/* ── Portrait — the rail's cutout avatar ─────────────────────────
+   After the reference's `.rail__avatar`: not a 3D model, a transparent
+   head-and-shoulders cutout (public/avatar.webp) with three layers that
+   read as depth —
+     · a blurred accent glow behind the figure (`__glow`)
+     · a drop-shadow under the figure (the one exception to rule 4)
+     · a radial fade so the shoulders melt into the rail
+   `.portrait__stage` is what page-motion.tsx tilts toward the pointer. The
+   glow sits back (`translateZ` −) and the figure forward (+), so under the
+   tilt they slide against each other — parallax without a canvas. With
+   reduced motion nothing tilts and the portrait is simply flat. */
+.portrait {
+  position: relative;
+  display: block;
+  perspective: 700px;
+}
+.portrait__stage {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+.portrait__glow {
+  position: absolute;
+  inset: 18% 4% 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 70%,
+    color-mix(in oklab, var(--accent) 34%, transparent),
+    transparent 66%
+  );
+  filter: blur(22px);
+  transform: translateZ(-40px) scale(1.06);
+  pointer-events: none;
+}
+.portrait__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  transform: translateZ(24px);
+  filter: drop-shadow(
+    0 14px 22px color-mix(in oklab, var(--text) 30%, transparent)
+  );
+  /* Two fades, intersected. The crop runs to below the shoulders, and the
+     square cuts the shirt at both sides and the bottom — edges that read
+     hard on the dark theme. One fade takes the sides to transparent, the
+     other the bottom. The head is centred, so neither touches it. */
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 24%, #000 76%, transparent),
+    linear-gradient(to bottom, #000 76%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 24%, #000 76%, transparent),
+    linear-gradient(to bottom, #000 76%, transparent 100%);
+  mask-composite: intersect;
+}
+.dark .portrait__glow {
+  background: radial-gradient(
+    ellipse at 50% 70%,
+    color-mix(in oklab, var(--accent) 45%, transparent),
+    transparent 66%
+  );
+}
+.dark .portrait__img {
+  filter: drop-shadow(0 14px 22px rgb(0 0 0 / 0.55));
+}
+/* ── Tool marks — brand colours, home marquee only ────────────────
+   Exception to rule 1, by Jan's request (2026-09-11): the tools marquee
+   shows each tool in its own colours (`<ToolIcon brand>`). Everywhere else
+   marks stay in currentColor. Near-black brands (Next.js, Vercel, Render,
+   Railway, SQLite's navy) fall back to the text colour on the dark theme,
+   and the monochrome file mark is inverted there, so no mark vanishes. */
+.tool-brand {
+  display: inline-flex;
+  color: var(--brand);
+}
+.dark .tool-brand--dark {
+  color: inherit;
+}
+.tool-mark {
+  display: block;
+  flex: none;
+}
+.dark .tool-mark--mono {
+  filter: invert(1);
+}
+/* ── Fitted bento — card layouts (≥ 1100 wide and ≥ 600 tall) ─────────
+   In the one-screen home the two bento rows split what height is left, so
+   on a laptop (1366×768, or 1920 at 125% zoom) a card is ~200px tall. A
+   card that stacks icon, title and two lines of text on top of its visual
+   leaves the visual ~40px — the window mock showed its three dots and the
+   portrait its top edge. After the reference, instead:
+     · wide cards (Work, Built for) go side by side — head and text left,
+       the visual right at the card's full height;
+     · narrow cards shrink their header with the window's height and scale
+       their visual to the room that is left;
+     · lists tighten, and fade where the card cuts them rather than
+       stopping on a sliced row. */
+@media (min-width: 68.75rem) and (min-height: 37.5rem) {
+  .home-fit__card--row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      "head media"
+      "desc media";
+    column-gap: clamp(14px, 1.4vw, 24px);
+    align-items: start;
+  }
+  .home-fit__card--row > .home-fit__card-head {
+    grid-area: head;
+  }
+  .home-fit__card--row > .home-fit__card-desc {
+    grid-area: desc;
+  }
+  .home-fit__card--row > .home-fit__card-media {
+    grid-area: media;
+    margin-top: 0;
+    height: 100%;
+  }
+
+  .home-fit__card-icon {
+    width: clamp(30px, 4.4vh, 40px);
+    height: clamp(30px, 4.4vh, 40px);
+  }
+  .home-fit__card-media {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Work — the window mock fills the media; its dark pane shows as many
+     products as fit. */
+  .home-fit__mock {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .home-fit__mock > :last-child {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* About — the portrait stack scales to the room left. */
+  .home-fit__stack {
+    height: min(100%, 8rem);
+    width: auto;
+    aspect-ratio: 9 / 8;
+    margin-top: 0;
+    align-self: center;
+  }
+
+  /* Ownership — the medal likewise. */
+  .home-fit__medal {
+    height: 100%;
+    margin-top: 0;
+    justify-content: center;
+  }
+  .home-fit__medal > :first-child {
+    width: auto;
+    height: min(calc(100% - 1rem), 6rem);
+    aspect-ratio: 1;
+  }
+  .home-fit__medal > :first-child > span {
+    width: 66%;
+    height: 66%;
+  }
+
+  /* Lists — tighter rows, and a fade where the card cuts them. */
+  .home-fit__list,
+  .home-fit__rows,
+  .home-fit__clients {
+    -webkit-mask-image: linear-gradient(#000 86%, transparent);
+    mask-image: linear-gradient(#000 86%, transparent);
+  }
+  .home-fit__list {
+    gap: clamp(4px, 0.8vh, 8px);
+  }
+  .home-fit__list > li {
+    padding-block: clamp(3px, 0.6vh, 6px);
+    font-size: clamp(12px, 0.85vw, 14px);
+  }
+  .home-fit__rows > li {
+    padding-block: clamp(2px, 0.5vh, 6px);
+    font-size: clamp(11.5px, 0.8vw, 14px);
+  }
+  .home-fit__clients {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: clamp(6px, 1vh, 12px);
+  }
+  .home-fit__clients > li {
+    padding: clamp(8px, 1.3vh, 16px);
+  }
+}
+/* Fitted bento on a short window (≤ 896px tall — a laptop, or 1920 at
+   125%): the Ownership card has ~40px under its text, too little for the
+   medal above its badge, so the key sits beside the badge instead. */
+@media (min-width: 68.75rem) and (min-height: 37.5rem) and (max-height: 56rem) {
+  .home-fit__medal {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+  .home-fit__medal > :first-child {
+    height: clamp(2rem, 6vh, 3.25rem);
+  }
+  .home-fit__medal > :last-child {
+    margin-top: 0;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+  /* Lists: one more row fits when every row gives up a few pixels. */
+  .home-fit__rows > li {
+    padding-block: 1px;
+    font-size: 11.5px;
+  }
+  .home-fit__list {
+    gap: 4px;
+  }
+  .home-fit__list > li {
+    padding-block: 2px;
+    font-size: 12px;
+  }
+}

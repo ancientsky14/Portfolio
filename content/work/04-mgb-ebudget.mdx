@@ -1,0 +1,100 @@
+---
+slug: mgb-ebudget
+title: "eBudget"
+subtitle: "Desktop budgeting and accounting, with a self-updating installer"
+client: "Mines and Geosciences Bureau — Regional Office I"
+clientCleared: true # cleared for naming by Jan, 2026-09-11
+clientAnonymous: "A national bureau's regional office"
+sector: "Finance and accounting"
+platform: "Desktop"
+status: "In use" # INFERRED from the release history and the in-office install notes — confirm
+version: "1.0.11"
+year: 2026
+role: "Sole developer — design, build, releases, maintenance"
+stack: ["Tauri 2", "Rust", "React 19", "TypeScript", "SQLite", "PostgreSQL"]
+repo: "ancientsky14/mgb-ebudget"
+repoPublic: false
+featured: true
+order: 1
+summary: >-
+  A Windows desktop app for budget execution and accounting — allotments,
+  obligation requests, disbursement vouchers, financial reports, journals and
+  ledgers. Several PCs in the office share one database, and the app updates
+  itself from signed releases. Built on SQLite first, later migrated to
+  Postgres.
+metrics:
+  - label: "Current release"
+    value: "v1.0.11"
+  - label: "PCs sharing one database"
+    value: null # NEEDS — how many are actually connected in the office
+---
+
+{/*
+  ────────────────────────────────────────────────────────────────
+  DRAFT — added 2026-09-10
+
+  CONFIRMED (read from the mgb-ebudget repo, not guessed):
+    · Windows desktop app: Tauri 2 + React 19 + Rust
+    · UACS budget execution and NGA accounting, aligned with the GAM for NGAs
+      and the UACS Manual
+    · allotments (GAARD / SARO / Sub-ARO), obligation requests with an
+      over-obligation guard, disbursement vouchers capped at the obligated
+      balance, FAR reports, journals and ledgers
+    · SQLite with rotating automatic backups (keep 30) and audit logging on
+      reference data; migrated to Postgres on Supabase on 2026-08-30, with
+      verified backups and a data migration
+    · LAN database sharing between PCs, paired with a code; the hosting PC
+      also serves the installer to the office network
+    · signed installer and in-app updater; v1.0.11; 84 commits,
+      2026-07-14 → 2026-09-03
+    · PDF (react-pdf) and Excel (exceljs) output
+
+  CONFIRMED by Jan, 2026-09-11:
+    · MGB RO1 may be named (also covers eTracker)
+    · it does NOT work offline since the Postgres cutover. The "Works
+      offline" metric was cut — never claim offline use for eBudget.
+
+  INFERRED — correct or delete:
+    · status "In use" — from the release history and the install notes
+
+  NEEDS — only you have these:
+    · how many PCs, and which roles, actually use it
+  ────────────────────────────────────────────────────────────────
+*/}
+
+## What it is
+
+A desktop app for the budget and accounting side of an office: every peso from
+allotment to obligation to disbursement, and the reports that show where it
+went.
+
+## What I built
+
+- **A desktop app, not a browser tab.** Tauri 2 with a Rust backend and a React
+  19 interface — one installer, no browser to keep open.
+- **Money that cannot overdraw.** Obligation requests carry an over-obligation
+  guard, and disbursement vouchers are capped at what was obligated. Every
+  document moves through a fixed lifecycle — draft, then obligated or
+  certified, then paid or cancelled.
+- **One database, several desks.** The budget officer, the accountant and the
+  cashier can work from the same records: one PC shares, the others pair with a
+  code.
+- **Updates that install themselves.** Releases are signed; the app checks on
+  launch and offers the new version. The hosting PC also serves the installer
+  to the rest of the office network.
+- **Data that survives mistakes.** Rotating automatic backups, and an audit log
+  on every change to reference data.
+- **Reports the office already files,** out as PDF and Excel.
+
+### The database move
+
+Built on SQLite first, then migrated to Postgres on Supabase — with verified
+backups and a real data migration, not a fresh start.
+
+<!-- NEEDS: why the move, and what the office gained for giving up offline use.
+     This is the most interesting engineering story in the project. -->
+
+## What I'd do differently
+
+<!-- NEEDS: yours. A real answer names a decision that cost you time and says what
+     you would choose now. -->
