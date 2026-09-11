@@ -143,7 +143,7 @@ export function AboutScene({ work }: { work: WorkDoc[] }) {
         </p>
         <ul className="mt-2 flex flex-col gap-1.5">
           {work.map((w) => {
-            const live = w.status ? !/develop/i.test(w.status) : false;
+            const live = w.status ? !/develop|testing/i.test(w.status) : false;
             return (
               <li
                 key={w.slug}

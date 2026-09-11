@@ -13,120 +13,85 @@ role: "Sole developer — design, build, deployment, maintenance"
 stack: ["Next.js 16", "TypeScript", "Supabase", "PostgreSQL", "Docker"]
 repo: "ancientsky14/mgbr1-dbtrackingV2"
 repoPublic: false
+live:
+  - kind: "production"
+    label: "Staff sign-in"
+    href: "https://mgbr1-etrackerv2.vercel.app"
+    note: "Accounts only — no public data behind it"
+    # Linking cleared by Jan, 2026-09-11. NEEDS: confirm this Vercel URL is
+    # still the current production (the repo README says so; it answered
+    # 200 on 2026-09-11).
+    cleared: true
 featured: true
 order: 4
+bodyReviewed: true # body confirmed by Jan, 2026-09-11
 summary: >-
   A document-tracking portal with a full audit trail, Supabase auth, bot
   protection and row-level security, shipped as a containerised Next.js
   standalone build through GitHub Actions. Built solo; replaced spreadsheet and
   paper routing for a regional office.
-metrics:
-  - label: "Documents tracked"
-    value: null # NEEDS
-  - label: "Staff onboarded"
-    value: null # NEEDS
-  - label: "Divisions covered"
-    value: null # NEEDS
+# No numbers: Jan chose to cut the tiles rather than estimate (2026-09-11).
+metrics: []
 ---
 
 {/*
   ────────────────────────────────────────────────────────────────
-  DRAFT — Phase 1
+  REVIEWED — body confirmed by Jan, 2026-09-11
 
-  CONFIRMED (from you):
+  CONFIRMED (from Jan):
     · mgbr1-etrackerv2, a records/tracking portal for MGB Region 1
-    · repo ancientsky14/mgbr1-dbtrackingV2
-    · Next.js 16 + Supabase
-    · Dockerfile with standalone output
-    · you build and maintain it
+    · repo ancientsky14/mgbr1-dbtrackingV2 · Next.js 16 + Supabase
+    · Dockerfile with standalone output · Jan builds and maintains it
+    · before: paper routing, with location kept in a logbook and a spreadsheet
+    · it tracks financial documents, routed across divisions
+    · the features that took the most thought: routing/handoffs, the audit
+      trail, search, reports/exports
+    · constraints: a fixed budget, staff who rotate, host-anywhere deploys
+    · no numbers published; no "what I'd do differently" section
 
-  INFERRED — correct or delete, do not ship as-is:
-    · the "before" state (paper routing slips + spreadsheets)
-    · what kinds of documents move through it
-    · that routing crosses divisions
-
-  NEEDS — only you have these:
-    · every number in `metrics`
-    · the actual go-live date
-    · whether MGB R1 will let you name them
+  Cut as unconfirmed: "no dedicated IT staff", and the handover/walkthrough line.
   ────────────────────────────────────────────────────────────────
 */}
 
 ## What it is
 
 eTracker is the internal system a regional bureau office uses to know where any
-document is right now — who has it, how long they have had it, and what has to
-happen next before it moves on.
+financial document is right now — who has it, how long they have had it, and what
+has to happen next before it moves on.
 
 ## Before
 
-<!-- NEEDS: replace with what you actually found on day one. The strongest version of
-     this block is concrete and slightly unflattering to the old process — not because
-     it mocks the office, but because it makes the improvement legible. Prompts:
-       · what was the routing slip? a physical form? a logbook?
-       · where did the master list live — one shared xlsx? several?
-       · what happened when someone asked "where is application X?"
-       · how long did that answer take?
--->
-
-A document entering the office moved between divisions on paper. The authoritative
-record of where anything was lived partly in a logbook, partly in a spreadsheet, and
-partly in the memory of whoever had handled it last. Answering "where is this
-application right now" meant asking people.
+A document entering the office moved between divisions on paper. The record of
+where anything was lived partly in a logbook and partly in a spreadsheet.
+Answering "where is this document right now" meant asking people.
 
 ## Constraints
 
-- **Procurement reality.** Fixed budget, and the system had to be something the office
-  could keep running without a line item for a vendor retainer.
-- **No dedicated IT staff.** Whatever got built had to be operable by the records
-  officer, not by a developer.
-- **Personnel movement.** Regional office staff rotate. A system that depends on one
-  champion is a system with an expiry date.
+- **A fixed budget.** The system had to be something the office could keep
+  running without a line item for a vendor retainer.
+- **Personnel movement.** Regional office staff rotate. A system that depends on
+  one champion is a system with an expiry date.
 - **Deployment freedom.** The office needed to be able to host it where their own
-  policy allowed — which is why it ships as a container rather than assuming one PaaS.
+  policy allowed — which is why it ships as a container rather than assuming one
+  platform.
 
 ## What I built
 
 A Next.js 16 application over Supabase, with Postgres row-level security doing the
-access control rather than application-layer checks — so a query that shouldn't return
-a row can't, regardless of which route asks.
+access control rather than application-layer checks — so a query that shouldn't
+return a row can't, whichever route asks.
 
-Packaged with a Dockerfile using Next's `standalone` output, which keeps the runtime
-image small and means the office can deploy it to whatever infrastructure they are
-allowed to use, rather than being pinned to a single platform.
+Packaged with a Dockerfile using Next's standalone output, which keeps the runtime
+image small and lets the office deploy it on whatever infrastructure they are
+allowed to use.
 
-<!-- NEEDS: one architecture diagram here. Boxes: browser → Next (RSC + route handlers)
-     → Supabase (Postgres + RLS + auth + storage). Show where the container boundary is. -->
+- **Routing and handoffs.** How a document moves between people and divisions,
+  and who holds it now.
+- **A full audit trail.** Every action on a document is logged — who did it, and
+  when.
+- **Search.** Any document, found fast.
+- **Reports and exports.** Summaries the office can pull out as a spreadsheet.
 
-<!-- NEEDS: name the two or three features that took the most thought. Candidates:
-     the routing/handoff model, the audit trail, the search, the reporting export. -->
+## After launch
 
-## Numbers
-
-<!-- NEEDS: fill `metrics` in the frontmatter above. Rules:
-       · never estimate. If you don't have it, cut the tile.
-       · three tiles maximum — a wall of numbers reads as padding.
-       · the strongest metric is almost always a time: "average time to locate a
-         document, before vs after." If you can get that from the records officer in
-         a five-minute phone call, it is worth more than every other number here.
--->
-
-## Handover and maintenance
-
-I maintain it after launch: fixes, updates and new features, from the person who
-built it.
-
-Handover included written operating documentation and a walkthrough with the records
-staff who use it daily.
-
-<!-- NEEDS: support details you are happy to publish, if any. -->
-
-## What I'd do differently
-
-<!-- NEEDS: yours. This block builds more trust than the other six combined, so it has
-     to be a real answer, not a humblebrag. A real answer names a decision that cost you
-     time and says what you'd choose now. Candidates from what I know:
-       · the v1 → v2 rewrite — what forced it, and what you'd have got right in v1
-       · anything about the schema you'd shape differently now
-       · whether the container was the right call versus a managed platform
--->
+I maintain it: fixes, updates and new features, from the person who built it.

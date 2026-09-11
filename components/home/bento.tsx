@@ -191,7 +191,7 @@ export function Bento() {
           >
             <ul className="home-fit__list flex flex-col gap-2">
               {work.map((w) => {
-                const live = w.status ? !/develop/i.test(w.status) : false;
+                const live = w.status ? !/develop|testing/i.test(w.status) : false;
                 return (
                   <li
                     key={w.slug}

@@ -2,7 +2,7 @@ import {
   BellRing,
   CircleCheck,
   Database,
-  KeyRound,
+  Cloud,
   Monitor,
   Network,
   RefreshCw,
@@ -17,9 +17,10 @@ import {
  *
  * Every node is in the eBudget case study's CONFIRMED block: signed
  * installer and in-app updater that checks on launch; the hosting PC serves
- * the installer to the office network; other PCs pair with a code and
- * share one database. Nothing here claims CI or offline use — neither is
- * confirmed (content/work/04-mgb-ebudget.mdx).
+ * the installer to the office network; every PC connects to the shared
+ * Postgres database on Supabase (no LAN pairing since the 2026-08-30 move).
+ * Nothing here claims CI or offline use — neither is confirmed
+ * (content/work/04-mgb-ebudget.mdx). eBudget is in testing, not in use.
  *
  * Server Component. The connectors are SVG paths in a 1000×360 box; the
  * nodes are HTML placed on the same grid. page-motion.tsx sends glowing
@@ -46,7 +47,7 @@ const NODES: Node[] = [
   { id: "done", x: 890, y: 90, icon: CircleCheck, title: "Installed", sub: "Same version everywhere", tone: "end" },
   { id: "pc", x: 170, y: 250, icon: Monitor, title: "New office PC", sub: "First install", tone: "start" },
   { id: "lan", x: 440, y: 250, icon: Network, title: "Installer from host", sub: "Over the office network" },
-  { id: "pair", x: 630, y: 250, icon: KeyRound, title: "Pairs with a code", sub: "Joins the hosting PC" },
+  { id: "cloud", x: 630, y: 250, icon: Cloud, title: "Connects to the cloud", sub: "Postgres on Supabase" },
   { id: "db", x: 860, y: 250, icon: Database, title: "Same records", sub: "One shared database", tone: "end" },
 ];
 
@@ -60,7 +61,7 @@ const PATHS: { d: string; order: number; to: string; dashed?: boolean }[] = [
   { d: "M 690 90 L 890 90", order: 3, to: "done" },
   { d: "M 318 90 C 400 90 440 150 440 222", order: 1, to: "lan", dashed: true },
   { d: "M 170 250 L 440 250", order: 1.4, to: "lan" },
-  { d: "M 440 250 L 630 250", order: 2.4, to: "pair" },
+  { d: "M 440 250 L 630 250", order: 2.4, to: "cloud" },
   { d: "M 630 250 L 860 250", order: 3.4, to: "db" },
 ];
 
@@ -83,7 +84,7 @@ export function UpdateFlow() {
         <p className="mx-auto mt-2 max-w-xl text-sm text-text-2">
           Tag a release and every installed copy offers it on its next
           launch. A new PC installs from the hosting PC, over the office
-          network. From eBudget, in use today.
+          network. From eBudget, now in testing.
         </p>
         <ul className="mt-4 flex flex-wrap justify-center gap-2">
           {CHIPS.map((c) => {

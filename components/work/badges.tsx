@@ -30,7 +30,7 @@ export function WorkBadges({
   if (!w.platform && !w.status && !w.version) return null;
 
   const Icon = w.platform ? PLATFORM_ICON[w.platform] : null;
-  const live = w.status ? !/develop/i.test(w.status) : false;
+  const live = w.status ? !/develop|testing/i.test(w.status) : false;
 
   return (
     <ul className={cn("flex flex-wrap items-center gap-2", className)}>

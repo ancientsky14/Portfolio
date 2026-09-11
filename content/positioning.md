@@ -49,7 +49,7 @@ Lead with what was **engineered**, not who bought it.
 
 | # | Project | The one-line proof |
 |---|---|---|
-| 1 | eBudget | A Windows desktop app — Tauri + Rust — with LAN-shared data and signed auto-updates |
+| 1 | eBudget | A Windows desktop app — Tauri + Rust — with one shared cloud database and signed auto-updates (in testing) |
 | 2 | LMIS | A public portal, a role-based CMS and a staff intranet, three deployments over one data model |
 | 3 | SENTRO | An open-source multi-site platform with server-enforced tenant isolation (in development) |
 | 4 | eTracker | A tracking portal with a full audit trail, shipped as a container through CI |

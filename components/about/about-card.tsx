@@ -74,7 +74,7 @@ export function AboutCard() {
   const bySlug = new Map(work.map((w) => [w.slug, w]));
   const story = confirmedStory();
 
-  const shipped = work.filter((w) => w.status && !/develop/i.test(w.status));
+  const shipped = work.filter((w) => w.status && !/develop|testing/i.test(w.status));
   const building = work.length - shipped.length;
   const [first, ...rest] = confirmedCredentials();
   const chips = [
