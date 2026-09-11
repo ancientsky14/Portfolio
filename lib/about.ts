@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import {
   Atom,
   GraduationCap,
@@ -154,22 +152,3 @@ export function confirmedCredentials(): Credential[] {
 
 /** The shipped chip's icon — its text is counted from the case studies. */
 export const SHIPPED_ICON: LucideIcon = Rocket;
-
-/**
- * The illustration in the card's right column. Drop
- * public/about-illustration.{webp,png,svg} in and it replaces the portrait
- * at the next build. Same build-time pattern, and the same hand-added
- * basePath prefix, as lib/avatar.ts.
- */
-const ART = [
-  "about-illustration.webp",
-  "about-illustration.png",
-  "about-illustration.svg",
-];
-
-export function aboutArtSrc(): string | null {
-  const file = ART.find((f) =>
-    fs.existsSync(path.join(process.cwd(), "public", f)),
-  );
-  return file ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/${file}` : null;
-}

@@ -1,15 +1,14 @@
 import Link from "next/link";
 import { getAllWork, displayClient, type WorkDoc } from "@/lib/content";
-import { avatarSrc } from "@/lib/avatar";
 import { SITE } from "@/lib/site";
 import {
   ROLES,
   SHIPPED_ICON,
-  aboutArtSrc,
   confirmedCredentials,
   confirmedStory,
 } from "@/lib/about";
 import { ToolIcon } from "@/components/icons/tool-icon";
+import { AboutScene } from "@/components/about/about-scene";
 
 /**
  * The About card — laid out after the reference's: story on the left
@@ -25,9 +24,8 @@ import { ToolIcon } from "@/components/icons/tool-icon";
  *     displayClient()
  *   · the "Sole developer" chip is counted from each case study's `status`
  *
- * The figure is public/about-illustration.* when there is one, the rail's
- * cutout portrait otherwise, the JLR monogram last. It does not tilt: the
- * pointer tilt in page-motion.tsx belongs to the rail's portrait.
+ * The figure is the workbench scene (about-scene.tsx) — product windows
+ * drawn from the case studies. It replaced Jan's portrait on 2026-09-11.
  *
  * The reference's chatbot bubble is an availability pill here — there is
  * no chatbot, and the pill is a way to the contact page.
@@ -75,8 +73,6 @@ export function AboutCard() {
   const work = getAllWork();
   const bySlug = new Map(work.map((w) => [w.slug, w]));
   const story = confirmedStory();
-  const art = aboutArtSrc();
-  const avatar = avatarSrc();
 
   const shipped = work.filter((w) => w.status && !/develop/i.test(w.status));
   const building = work.length - shipped.length;
@@ -199,42 +195,12 @@ export function AboutCard() {
         </div>
 
         {/* ── figure ──────────────────────────────────────────── */}
-        <div className="relative isolate flex min-h-80 items-end justify-center overflow-hidden border-t border-line bg-surface-2 xl:border-l xl:border-t-0">
+        <div className="relative isolate min-h-112 overflow-hidden border-t border-line bg-surface-2 xl:border-l xl:border-t-0">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 -z-10 [background:radial-gradient(70%_60%_at_75%_20%,var(--accent-soft),transparent_72%),radial-gradient(55%_45%_at_15%_100%,color-mix(in_oklab,var(--sand)_16%,transparent),transparent_70%)]"
           />
-          {art ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={art}
-              alt=""
-              width={640}
-              height={640}
-              className="h-auto w-full max-w-md object-contain object-bottom"
-            />
-          ) : avatar ? (
-            <span className="portrait size-72 sm:size-80 xl:size-96">
-              <span className="portrait__stage">
-                <span aria-hidden="true" className="portrait__glow" />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={avatar}
-                  alt=""
-                  width={512}
-                  height={512}
-                  className="portrait__img"
-                />
-              </span>
-            </span>
-          ) : (
-            <span
-              aria-hidden="true"
-              className="mb-16 grid size-40 place-items-center rounded-full border border-line bg-accent-soft font-display text-3xl font-bold tracking-tight text-accent"
-            >
-              JLR
-            </span>
-          )}
+          <AboutScene work={work} />
 
           <Link
             href="/contact"
