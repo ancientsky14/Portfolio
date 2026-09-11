@@ -57,7 +57,9 @@ export function prepareBody(raw: string): string {
  * Flip that flag after reading the rendered page and correcting it, not
  * before. The summary, stack and real metrics render either way.
  */
-export function bodyVisibility(meta: WorkMeta): "public" | "draft" | "hidden" {
+export function bodyVisibility(
+  meta: Pick<WorkMeta, "bodyReviewed">,
+): "public" | "draft" | "hidden" {
   if (meta.bodyReviewed) return "public";
   return process.env.NODE_ENV === "production" ? "hidden" : "draft";
 }

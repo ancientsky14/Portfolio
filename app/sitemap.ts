@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getWorkSlugs } from "@/lib/content";
+import { getLabSlugs } from "@/lib/lab";
 import { SITE } from "@/lib/site";
 
 // Required for `output: "export"` — generated once at build time.
@@ -15,6 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/lab",
     "/writing",
     ...getWorkSlugs().map((s) => `/work/${s}`),
+    ...getLabSlugs().map((s) => `/lab/${s}`),
   ];
 
   // trailingSlash: true in next.config.ts — match it, or every URL in the

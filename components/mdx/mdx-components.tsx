@@ -82,4 +82,12 @@ export const mdxComponents = {
     />
   ),
   hr: () => <hr className="my-12 border-line" />,
+  // Fenced code — the lab notes. The inner <code> keeps the inline style's
+  // font but drops its chip background and padding.
+  pre: (p: ComponentPropsWithoutRef<"pre">) => (
+    <pre
+      className="mt-6 overflow-x-auto rounded-md border border-line bg-surface-2 p-4 font-mono text-xs leading-relaxed text-text [&>code]:bg-transparent [&>code]:p-0"
+      {...p}
+    />
+  ),
 };

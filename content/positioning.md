@@ -25,7 +25,7 @@ neither.
 > **Software that ships. And keeps running.**
 
 It compresses the two things the projects actually prove: they reached
-release (eBudget is at v1.0.11 with signed auto-updates), and they stayed up
+release (eBudget is at v1.0.12 with signed auto-updates), and they stayed up
 after it (every role line says *maintenance*).
 
 ---

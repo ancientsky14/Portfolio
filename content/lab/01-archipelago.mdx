@@ -1,0 +1,106 @@
+---
+slug: archipelago
+title: "Archipelago"
+subtitle: "A GPU point cloud behind every page — and what it refuses to be"
+kind: "Experiment"
+year: 2026
+blurb: >-
+  Thirty thousand points that resolve out of a drifting field into a chain of
+  islands, in one draw call, without a React renderer — and a still poster for
+  every device that should not run it.
+stack: ["Three.js", "GSAP", "TypeScript"]
+source:
+  label: "Source — public repo"
+  href: "https://github.com/ancientsky14/Portfolio"
+proof: "Running behind this page"
+# Each read from components/hero/archipelago-canvas.tsx and archipelago.tsx.
+facts:
+  - value: "30,000"
+    label: "points on desktop"
+  - value: "12,000"
+    label: "on phones"
+  - value: "1"
+    label: "draw call"
+  - value: "4"
+    label: "reasons it stays off"
+featured: true
+order: 1
+bodyReviewed: false
+---
+
+{/*
+  ────────────────────────────────────────────────────────────────
+  DRAFT — 2026-09-11
+
+  CONFIRMED (read from this repo, not guessed):
+    · components/hero/archipelago-canvas.tsx — raw three.js, one geometry,
+      one material, one draw call; 30,000 points (12,000 at ≤640px);
+      pixel ratio capped at 1.5; powerPreference "low-power"
+    · the shader lerps scatter → target on one uniform (uProgress) that
+      GSAP drives, with a per-point delay so it resolves as a wave
+    · components/hero/archipelago.tsx — the mount guards
+    · lib/archipelago.ts — procedural islands, seeded; deliberately not a
+      map of the Philippines, and why
+    · lib/motion.ts — BG_EVENT scatter / gather / attract
+
+  NEEDS (Jan):
+    · read it in your own voice and correct anything that does not sound
+      like you, then set bodyReviewed: true
+  ────────────────────────────────────────────────────────────────
+*/}
+
+## What it is
+
+The background of this site is a point cloud. On load, thirty thousand points
+drift in from a loose field and settle into a chain of islands on the right of
+the window. At rest they breathe. They part around the pointer, lean toward the
+card or button under it, loosen when a page leaves and resolve again when the
+next one arrives.
+
+It is one geometry, one material and one draw call.
+
+## Why not react-three-fiber
+
+For a single point cloud, a React reconciler for the scene earns nothing and
+costs a second runtime against a hard budget: the three.js chunk has to stay
+under 500KB, loaded lazily, after the page is already readable. So the canvas
+is written against three.js directly, and `three` reaches the browser only
+through one dynamic import.
+
+## The animation lives in the shader
+
+Every point carries two positions — where it starts, in the drifting field,
+and where it belongs, on an island — plus a random seed. The vertex shader
+mixes between them against a single uniform, `uProgress`, and GSAP drives that
+one number. The seed delays each point slightly, so the islands form as a wave
+rather than snapping into place.
+
+Nothing moves on the CPU per point. The page talks to the canvas through three
+window events — `scatter`, `gather` and `attract` — so neither side imports
+the other, and the page works the same when the canvas is absent.
+
+## When it does not run
+
+The canvas is the enhancement; the still poster in the HTML is the default.
+It does not mount when:
+
+- the visitor asked for reduced motion, in the OS or in the site's own
+  accessibility panel
+- the browser cannot give it a WebGL context
+- Save-Data is on, or the connection reports 2g
+- the device reports under 4GB of memory
+
+Where it does run, it asks for the low-power GPU, caps the pixel ratio at 1.5,
+and drops to twelve thousand points on narrow screens. The people this site is
+for often open it on a mid-range Android, on mobile data, outside Metro Manila.
+
+## What it is not
+
+It is not a map of the Philippines. The islands are procedural — a seeded
+north–south chain with a few outliers — so it reads as an archipelago without
+claiming to be a coastline. An inaccurate outline of a real country, on the
+site of a developer who sells accuracy to that country's institutions, is a bad
+trade for a background effect.
+
+The upgrade path, if it is ever worth the day: sample points inside a
+public-domain outline at build time, keeping the same data shape.

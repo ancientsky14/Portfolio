@@ -164,6 +164,10 @@ export default function ArchipelagoCanvas() {
     renderer.domElement.style.height = "100%";
     renderer.domElement.style.display = "block";
     el.appendChild(renderer.domElement);
+    // Tells the page the canvas is live, so controls for it (the /lab
+    // "Watch it assemble" button, `.bg-live-only`) can show. Removed on
+    // unmount.
+    document.documentElement.dataset.archipelago = "live";
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(FOV, aspect, 0.1, 100);
@@ -371,6 +375,7 @@ export default function ArchipelagoCanvas() {
       material.dispose();
       renderer.dispose();
       renderer.domElement.remove();
+      delete document.documentElement.dataset.archipelago;
     };
   }, []);
 

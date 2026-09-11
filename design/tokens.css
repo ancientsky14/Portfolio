@@ -976,3 +976,46 @@ html.is-intro [data-intro="tabbar"] {
     font-size: 12px;
   }
 }
+
+/* ── Controls for the Archipelago ──────────────────────────────────
+   Shown only while the canvas is mounted: archipelago-canvas.tsx sets
+   data-archipelago="live" on <html> and removes it on unmount. Under
+   reduced motion, without WebGL or on Save-Data there is no canvas — and a
+   control for an effect that is not there would do nothing. Unlayered on
+   purpose, so it wins over a display utility on the same element. */
+.bg-live-only {
+  display: none;
+}
+html[data-archipelago="live"] .bg-live-only {
+  display: inline-flex;
+}
+/* ── Select — the designed dropdown's list (components/ui/select.tsx) ──
+   A quick fade and rise from the field; from above when it opens upward.
+   Reduced motion (OS or the site's panel) removes it with every other
+   animation, so the list simply appears. */
+.select-pop {
+  animation: select-pop 150ms var(--ease-out) both;
+}
+.select-pop[data-up] {
+  animation-name: select-pop-up;
+}
+@keyframes select-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+@keyframes select-pop-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .select-pop {
+    animation: none;
+  }
+}
+html.a11y-reduce-motion .select-pop {
+  animation: none;
+}

@@ -1,0 +1,99 @@
+---
+slug: signed-releases
+title: "One-command signed releases"
+subtitle: "Refusing the two release failures that are otherwise silent"
+kind: "Note"
+year: 2026
+blurb: >-
+  A desktop app that updates itself is only as safe as its release process.
+  One script replaced six manual steps — and refuses, up front, the two
+  mistakes that otherwise surface on someone else's PC weeks later.
+stack: ["Tauri", "Rust", "TypeScript"]
+source:
+  label: "Update feed — public repo"
+  href: "https://github.com/ancientsky14/mgb-ebudget-releases"
+proof: "Public update feed · source private"
+order: 2
+bodyReviewed: false
+---
+
+{/*
+  ────────────────────────────────────────────────────────────────
+  DRAFT — 2026-09-11
+
+  CONFIRMED (read from the mgb-ebudget repo, not guessed):
+    · scripts/release.mjs — `npm run release <version> [--tag]`; replaces
+      a six-step manual process; its header names the two silent failures
+    · validates before touching anything: version format, higher than the
+      current one, signing key present (contents, not the _PATH variant,
+      which the pinned CLI ignores)
+    · bumps both version files, builds, verifies the installer is signed,
+      publishes to the public releases repo, writes latest.json itself
+    · the GitHub asset-rename trap (spaces → dots)
+    · --tag: refuses a dirty tree; commits and tags only after the build
+      is verified signed
+    · src-tauri/tauri.conf.json — updater endpoint is the public repo's
+      latest.json; Windows installMode "passive"
+    · public repo ancientsky14/mgb-ebudget-releases — latest v1.0.12
+
+  NEEDS (Jan):
+    · read it in your own voice, then set bodyReviewed: true
+  ────────────────────────────────────────────────────────────────
+*/}
+
+## The problem
+
+eBudget is a Windows desktop app that updates itself: every installed copy
+checks a feed, downloads the new installer and verifies its signature before
+installing. Shipping a release used to be six manual steps, and two of the
+ways it could go wrong were silent.
+
+- **A version that is not higher than the current one** builds perfectly, and
+  then never offers itself to anyone — the updater only compares numbers. No
+  error appears anywhere.
+- **A build whose signing step failed** still produces a working-looking
+  installer, which every installed copy then refuses.
+
+Both would be discovered in the office, not at the desk where the release was
+made.
+
+## One command
+
+```bash
+npm run release 1.0.2
+npm run release 1.0.2 --tag
+```
+
+The script checks everything it can **before** it touches anything: that the
+target is a real version, that it is higher than the current one, and that the
+signing key is present — its contents, because the documented path-based
+variable is not honoured by the pinned CLI and would only fail at the very last
+step of a ten-minute build.
+
+Then it bumps both version files (they must agree), builds, and **refuses to
+publish anything unsigned**.
+
+## A public feed for a private app
+
+The updater downloads with no credentials, and a private repository's release
+assets need an authenticated request it cannot make. So the installers and the
+update manifest live in a separate public repository that holds nothing but
+releases. The download stays open; a government financial system's source does
+not.
+
+## The trap that only shows up later
+
+GitHub renames uploaded assets, replacing spaces with dots. The installer is
+built with spaces in its name, so a manifest pointing at the original name
+would 404 — at update time, on someone else's PC, long after the release
+looked successful. The script uploads under a name with nothing to rewrite, and
+writes the manifest itself, so the asset name and the URL that points at it
+are decided in one place.
+
+## Tagging, safely
+
+With `--tag` it also commits the version bump, tags and pushes, so CI archives
+the signed installer — otherwise the only copies of a shipped build live on one
+PC. Two rules keep that safe: it refuses to start on a dirty working tree, and
+it commits only **after** the build is proven signed, so a tag never points at
+a version that does not build.

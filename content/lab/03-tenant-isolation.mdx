@@ -1,0 +1,109 @@
+---
+slug: tenant-isolation
+title: "Proving tenant isolation on the server"
+subtitle: "“The migration applied without error” is not evidence"
+kind: "Note"
+year: 2026
+blurb: >-
+  Turning a single-barangay records app into a multi-barangay platform means
+  one barangay must never read another's residents. A clean migration proves
+  nothing — so the gate is a test that tries to break in.
+stack: ["PocketBase", "React", "Docker"]
+proof: "20 assertions · npm run test:tenancy"
+order: 3
+bodyReviewed: false
+---
+
+{/*
+  ────────────────────────────────────────────────────────────────
+  DRAFT — 2026-09-11
+
+  CONFIRMED (read from the sentro repo, not guessed):
+    · docs/ROADMAP.md — the upstream app had no tenant concept; 18
+      collections with role-only rules; Phase 1 gate: npm run
+      test:tenancy, 20 assertions passing
+    · three migrations, additive → backfill → tighten, and why
+    · the rule-wrapping line, quoted verbatim
+    · mirrored collections read-only in the cloud; composite uniqueness
+    · finance_audit_logs createRule forgery hole, fixed in the same pass
+    · one-writer topology; remote barangay staff read-only
+    · scripts/test-tenancy.mjs — Test 1 legacy upgrade, Test 2 isolation;
+      the assertions listed below are its check() names
+    · SENTRO is MIT, built on BarangayOS by Rodney Dela Cruz (verified
+      2026-09-10 against sentro/LICENSE)
+
+  NEEDS (Jan):
+    · the sentro repo is private — confirm that publishing this level of
+      schema detail is fine (you approved the entry on 2026-09-11)
+    · read it in your own voice, then set bodyReviewed: true
+  ────────────────────────────────────────────────────────────────
+*/}
+
+## The starting point
+
+SENTRO is built on BarangayOS, an MIT-licensed records app for a single
+barangay. It had no concept of a tenant — not a column, not a filter, not a
+route parameter. All eighteen collections used role-only access rules. Put two
+barangays in one database and they would have read each other's residents
+immediately.
+
+The target is a cloud instance for the city or municipal hall, holding a mirror
+of every barangay's records.
+
+## Three migrations, not one
+
+Adding a required `barangay` field to a table that already has rows fails
+outright, and there is no in-migration rollback. So the change is three steps,
+in the only order that is safe:
+
+1. **Additive** — a barangay registry, and `barangay` added as an _optional_
+   field.
+2. **Backfill** — derive the barangay from the existing settings and stamp
+   every pre-existing row.
+3. **Tighten** — make the field required, scope uniqueness to the tenant, and
+   rewrite the access rules.
+
+The rules **wrap** each collection's existing role check rather than replacing
+it, so everything that was admin-only stays admin-only:
+
+```javascript
+collection[rule] = `((${base}) && barangay = @request.auth.barangay) || ${CITY_ROLE}`
+```
+
+Uniqueness that would have broken on the second barangay became composite —
+two barangays can both have household number 001, but one barangay still
+cannot have two.
+
+## The test that tries to break in
+
+"The migration applied without error" is not evidence of isolation. The gate
+for this phase is a script that starts a throwaway server, seeds two
+barangays, logs in as one, and attacks the other. It checks that barangay A:
+
+- lists only its own residents
+- cannot fetch B's resident by id
+- cannot filter its way into B's rows
+- cannot create, update or delete in a cloud mirror
+- cannot enumerate B's user accounts
+- sees no other barangay's rows in **any** mirrored collection
+
+And that the city role can read across every barangay but **cannot write**
+barangay data — oversight, not control.
+
+Twenty assertions. The test never touches the repository it runs from, and it
+reads the server's output rather than its exit code, because the server exits
+cleanly even when a migration fails.
+
+## What it found on the way
+
+One collection's create rule allowed any signed-in user — including a
+read-only viewer — to write audit-log rows under any name. Forged audit
+entries in a records system are exactly the failure a government client would
+never forgive. It was closed in the same pass.
+
+## One writer per record
+
+Each barangay's data has exactly one writer: its own node, in the barangay
+hall. Staff working remotely read their barangay's data from the cloud mirror
+but cannot write to it. That single decision keeps conflict resolution out of
+the system entirely — which is why the mirrors are read-only in the cloud.
