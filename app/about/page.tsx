@@ -1,31 +1,32 @@
 import type { Metadata } from "next";
-import { Download, Mail } from "lucide-react";
-import { TOOLS } from "@/lib/stack";
+import Link from "next/link";
+import { ArrowUpRight, Download, Mail } from "lucide-react";
 import { SITE } from "@/lib/site";
 import { cvHref } from "@/lib/cv";
 import { ToolIcon } from "@/components/icons/tool-icon";
 import { SocialLinks } from "@/components/shell/social-links";
+import { AboutCard } from "@/components/about/about-card";
 
 export const metadata: Metadata = {
   title: "About",
-  description:
-    "Full-stack developer building web apps, desktop apps and multi-site platforms — open to projects and full-time roles.",
+  description: `${SITE.line} Full-stack developer in the Philippines — open to projects and full-time roles.`,
 };
 
 /**
  * About — who you would be hiring, as a client or as an employer.
  *
- * Everything here is checkable: the project facts come from
- * content/work/*.mdx (themselves checked against each repo), the skills
- * from lib/stack.ts, and the ownership paragraph is Jan's own stance. There
- * is no origin story, because an invented one is the easiest thing on a
- * portfolio to catch and the least useful thing on it to read.
+ * Laid out after the reference's About page: an eyebrow, a big greeting,
+ * one line, then the About card (components/about/about-card.tsx) — story,
+ * role rows, credentials and the figure. Then the way in for a client, the
+ * after-launch promise, and `#hire` for employers.
+ *
+ * Everything here is checkable: project facts come from content/work/*.mdx,
+ * tools from lib/stack.ts, credentials and the story from the gates in
+ * lib/about.ts. The story is still a NEEDS there — until Jan gives it, the
+ * card renders a fallback built only from the case studies.
  *
  * `#hire` is where the home page's "Hire me" lands. The CV button renders
  * only if public/cv.pdf exists — see lib/cv.ts.
- *
- * NEEDS: anything only you can say — years building, where you are based,
- * what you studied or did before this.
  */
 
 /** Skills grouped the way a recruiter scans them. Every item is in lib/stack.ts. */
@@ -42,66 +43,57 @@ export default function About() {
   return (
     <>
       <section className="border-b border-line px-5 py-16 sm:px-8 sm:py-20 lg:px-12">
-        <p className="font-mono text-2xs uppercase tracking-widest text-text-3">
+        <p className="font-mono text-2xs font-semibold uppercase tracking-widest text-accent">
           About
         </p>
 
-        <h1 data-split className="mt-6 max-w-3xl font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
-          I build software end to end — design, code, release, and the updates
-          after.
+        <h1
+          data-split
+          className="mt-4 font-display text-3xl font-extrabold leading-none tracking-tight text-text lg:text-4xl"
+        >
+          Hi, I&rsquo;m Jan.
         </h1>
+        <p className="mt-4 max-w-2xl text-lg text-text-2">{SITE.line}</p>
 
-        <div className="mt-8 max-w-2xl">
-          <p className="text-lg text-text-2">
-            I&rsquo;m a full-stack developer in the Philippines. I&rsquo;ve
-            shipped a Windows desktop app with a Rust backend and signed
-            auto-updates, a web platform with a role-based CMS across three
-            surfaces, and a document-tracking portal with a full audit trail —
-            and I&rsquo;m building an open-source multi-site platform on top of
-            an MIT-licensed project.
-          </p>
+        <AboutCard />
 
-          <p className="mt-4 text-text-2">
-            On every project here I was the only developer — the person who
-            designed it, shipped it and kept it running. I build software the
-            way I&rsquo;d want to maintain it: signed releases, audit trails,
-            and updates that install themselves.
-          </p>
+        {/* The way in, for a client — the reference stops at the card. */}
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <Link
+            href="/contact"
+            data-magnetic
+            className="group inline-flex items-center gap-2 rounded-full bg-text py-3 pl-6 pr-5 text-sm font-semibold text-ground transition-opacity hover:opacity-90"
+          >
+            Start a project
+            <ArrowUpRight
+              size={16}
+              strokeWidth={2}
+              aria-hidden="true"
+              className="text-accent-soft transition-transform duration-300 ease-(--ease-out) group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+            />
+          </Link>
+          <Link
+            href="/work"
+            data-magnetic
+            className="inline-flex items-center rounded-full border border-line-2 bg-surface px-5 py-3 text-sm font-semibold text-text transition-colors hover:border-accent"
+          >
+            See the work
+          </Link>
         </div>
 
         {/* "After launch" — step 4 in lib/engagement.ts. The earlier
             ownership stance was withdrawn on 2026-09-11; no ownership or
             payment terms here. */}
-        <div className="mt-10 max-w-2xl rounded-lg border border-line bg-surface p-6 shadow-soft sm:p-8">
+        <div
+          data-reveal
+          className="mt-12 max-w-2xl rounded-lg border border-line bg-surface p-6 shadow-soft sm:p-8"
+        >
           <p className="font-mono text-2xs uppercase tracking-widest text-accent">
             After launch
           </p>
           <p className="mt-4 text-lg text-text-2">
             I stay on. Fixes, updates and new features come from the person who
             built it — no handover to a stranger.
-          </p>
-        </div>
-
-        <div className="mt-12">
-          <h2 className="font-mono text-2xs uppercase tracking-widest text-text-3">
-            What I work in
-          </h2>
-          <ul className="mt-4 flex flex-wrap gap-2">
-            {TOOLS.map((t) => (
-              <li
-                key={t.name}
-                className="inline-flex items-center gap-2 rounded-full border border-line bg-surface py-1.5 pl-3 pr-3.5 font-mono text-2xs uppercase tracking-widest text-text-2"
-              >
-                <span className="text-text">
-                  <ToolIcon name={t.name} size={13} />
-                </span>
-                {t.name}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 text-sm text-text-3">
-            Nothing on this list is aspirational. Each one is in a project I
-            have shipped or am building, or in this site.
           </p>
         </div>
       </section>
