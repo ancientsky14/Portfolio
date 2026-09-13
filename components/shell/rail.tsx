@@ -8,6 +8,8 @@ import { SOCIALS } from "@/lib/socials";
 import { BrandIcon } from "@/components/icons/brand";
 import { NAV } from "./nav-links";
 import { ThemeToggle } from "./theme-toggle";
+import { VerifiedBadge } from "./verified-badge";
+import { VisitCount } from "./visit-count";
 
 /**
  * The rail — persistent identity and navigation, left of the scrolling panel.
@@ -23,9 +25,13 @@ import { ThemeToggle } from "./theme-toggle";
  *   · the bottom carries the copyright with the accessibility button beside
  *     it, as in the reference. "Get in touch" lives in the hero, the Contact
  *     nav item and the mobile bar;
- *   · no "verified" badge and no visit counter. The first claims a
- *     verification that does not exist; the second would need analytics a
- *     static GitHub Pages site does not have.
+ *   · a generic check badge beside the name (Jan, 2026-09-13) — never a
+ *     platform's verified mark, which would claim a verification that does
+ *     not exist (components/shell/verified-badge.tsx).
+ *   · a visit count beside the handle (Jan, 2026-09-13). GitHub Pages runs
+ *     no server, so it comes from GoatCounter (components/shell/
+ *     visit-count.tsx). A real number or none: until it loads, or if it
+ *     cannot, the line reads the role, as it did before.
  *
  * `avatarSrc` is resolved at build time by lib/avatar.ts. Hidden below `lg`;
  * components/shell/mobile-bar.tsx covers that.
@@ -88,11 +94,12 @@ export function Rail({ avatarSrc }: { avatarSrc: string | null }) {
             )}
           </Link>
 
-          <p className="mt-5 font-display text-lg font-bold tracking-tight">
+          <p className="mt-5 inline-flex items-center gap-1.5 font-display text-lg font-bold tracking-tight">
             {SITE.name}
+            <VerifiedBadge size={18} />
           </p>
           <p className="mt-1 text-sm text-text-3">
-            @ancientsky14 · {SITE.role}
+            @ancientsky14 · <VisitCount fallback={SITE.role} />
           </p>
 
           <div className="mt-6 flex items-center gap-2">

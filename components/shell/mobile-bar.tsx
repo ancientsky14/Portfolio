@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { SITE } from "@/lib/site";
 import { ThemeToggle } from "./theme-toggle";
+import { VerifiedBadge } from "./verified-badge";
 
 /**
  * The top bar below lg.
@@ -25,8 +26,11 @@ export function MobileBar() {
           >
             JLR
           </span>
-          <span className="truncate font-display text-sm font-semibold tracking-tight">
-            {SITE.name}
+          <span className="flex min-w-0 items-center gap-1">
+            <span className="truncate font-display text-sm font-semibold tracking-tight">
+              {SITE.name}
+            </span>
+            <VerifiedBadge size={14} />
           </span>
         </Link>
 

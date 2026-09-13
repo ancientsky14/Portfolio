@@ -1019,3 +1019,14 @@ html[data-archipelago="live"] .bg-live-only {
 html.a11y-reduce-motion .select-pop {
   animation: none;
 }
+/* ── The name badge (components/shell/verified-badge.tsx) ───────────
+   Army green, by Jan's request (2026-09-13) — an exception to the
+   one-accent rule, like the brand-coloured tool marks. Lighter olive on
+   the dark theme, where army green would sink into the ground. The check
+   inside stays white on both. */
+:root {
+  --verified: #4b5320;
+}
+.dark {
+  --verified: #8a9a5b;
+}

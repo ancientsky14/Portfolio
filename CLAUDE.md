@@ -121,6 +121,10 @@ and palette. Read `PLAN-V2.md` before changing layout or tokens.
   drop-shadow, shoulder fade (`.portrait` in `design/tokens.css`) — and a
   pointer tilt in `page-motion.tsx`. The original photo stays in gitignored
   `tmp-shots/`; never commit it (EXIF). It is not a 3D model; do not add one.
+- A generic check badge sits beside Jan's name in the rail and the mobile bar
+  (2026-09-13, `components/shell/verified-badge.tsx`), army green from the
+  `--verified` token. It is **never** a platform's verified mark (Meta, X):
+  that would claim a verification that does not exist.
 - Side padding is `px-5 sm:px-8 lg:px-12`, set by the section or by
   `components/site/container.tsx`. Do not add horizontal padding elsewhere.
 - Light is the default theme. Dark lives under `.dark` on `<html>`, set
