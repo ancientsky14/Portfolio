@@ -57,10 +57,10 @@ const VERT = /* glsl */ `
     vec3 pos = mix(aScatter, aTarget, eased);
 
     // Breathing — slow, small, and scaled by how resolved the field is.
-    // Speeds raised ~1.5x on 2026-09-13 (Jan: "a little faster"); amplitudes unchanged.
-    float breathe = sin(uTime * 0.55 + aSeed * 6.2831) * 0.045 * eased;
+    // Idle speeds raised twice on 2026-09-13 (Jan: "a little faster", then "a little more"); amplitudes unchanged.
+    float breathe = sin(uTime * 0.8 + aSeed * 6.2831) * 0.045 * eased;
     pos.xy += normalize(pos.xy + 0.0001) * breathe;
-    pos.z += sin(uTime * 0.45 + aSeed * 12.0) * 0.05 * eased;
+    pos.z += sin(uTime * 0.65 + aSeed * 12.0) * 0.05 * eased;
 
     // Pointer repulsion, damped by distance. Only meaningful once resolved.
     vec2 away = pos.xy - uMouse;
