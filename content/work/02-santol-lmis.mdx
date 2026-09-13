@@ -14,15 +14,8 @@ role: "Sole developer — design, build, migration, maintenance"
 stack:
   ["Next.js 16", "TypeScript", "Supabase", "PostgreSQL", "Cloudflare Workers"]
 deployments: ["lmis", "lmis-staff", "lmis-admin"]
-live:
-  - kind: "production"
-    label: "Public portal"
-    # Given by Jan, 2026-09-11: the public portal on Cloudflare Workers.
-    # santol.gov.ph is the planned domain and does not resolve yet. Public
-    # portal only — lmis-admin is never linked (lib/live.ts blocks it).
-    href: "https://lmis.santol-lu.workers.dev"
-    note: "The live site residents use"
-    cleared: true # linking cleared by Jan, 2026-09-11
+# No live link: Jan asked on 2026-09-13 that the systems in use and in
+# production are not linked from the site. The recorded preview stays.
 # Captured from the live system on Jan's instruction (2026-09-11), replacing
 # the Miraverde demo: the public portal, and an allowlist of staff-application
 # pages with email addresses, phone numbers and nearby names masked

@@ -161,19 +161,9 @@ export function Rail({ avatarSrc }: { avatarSrc: string | null }) {
             <br />
             {SITE.name}. All rights reserved.
           </p>
-          {/* Design credit — lib/site.ts. Shown here as well as in the page
-              footer, because the desktop home page has no footer. */}
+          {/* Design credit — plain text, never a link (lib/site.ts). */}
           <p className="mt-2 pl-13 text-xs leading-relaxed text-text-3">
-            {SITE.credit.text}{" "}
-            <a
-              href={SITE.credit.href}
-              target="_blank"
-              rel="noopener"
-              className="underline decoration-line-2 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
-            >
-              {SITE.credit.name}
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
+            {SITE.credit}
           </p>
         </div>
       </div>

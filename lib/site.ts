@@ -43,11 +43,8 @@ export const SITE = {
   /** The one-line role under the name in the rail. */
   role: "Full-stack developer",
 
-  /** Design credit, shown in the footer. The layout follows Kenneth
-   *  Villar's portfolio (see CLAUDE.md, "Where the build is — V2"). */
-  credit: {
-    text: "Design inspired by",
-    name: "Kenneth Villar",
-    href: "https://portfolio.brewedops.cloud/",
-  },
+  /** Design credit, in the rail and the page footer. Plain text, never a
+   *  link — Jan asked on 2026-09-13 that the reference site is not linked
+   *  from the page. */
+  credit: "© Kenneth Villar",
 } as const;
