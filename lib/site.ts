@@ -47,4 +47,16 @@ export const SITE = {
    *  link — Jan asked on 2026-09-13 that the reference site is not linked
    *  from the page. */
   credit: "© Kenneth Villar",
+
+  /**
+   * GoatCounter site code — the "NAME" in NAME.goatcounter.com. Drives the
+   * visit count beside the handle in the rail (components/shell/
+   * visit-count.tsx) and the counting script (components/analytics/
+   * goatcounter.tsx). Jan's choice, 2026-09-13.
+   *
+   * Account created by Jan, 2026-09-13. "Allow adding visitor counts on your
+   * website" must stay on in its site settings, or the rail shows `role`.
+   * Set to null to switch counting and the count off entirely.
+   */
+  goatcounter: "ancientsky14" as string | null,
 } as const;

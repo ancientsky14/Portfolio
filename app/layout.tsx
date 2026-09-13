@@ -15,6 +15,7 @@ import { A11yPanel } from "@/components/shell/a11y-panel";
 import { TabBar } from "@/components/shell/tab-bar";
 import { BootIntro } from "@/components/motion/boot-intro";
 import { Archipelago } from "@/components/hero/archipelago";
+import { GoatCounter } from "@/components/analytics/goatcounter";
 import "./globals.css";
 
 /* The three faces from the design direction. The CSS variable names here
@@ -101,6 +102,9 @@ export default function RootLayout({
         </a>
 
         <PageMotion />
+        {/* Visit counting for the rail's count — renders nothing until
+            SITE.goatcounter is set (lib/site.ts). */}
+        <GoatCounter />
         <ScrollProgress />
         <A11yPanel />
         <BootIntro />

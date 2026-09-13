@@ -30,8 +30,9 @@ import { VisitCount } from "./visit-count";
  *     not exist (components/shell/verified-badge.tsx).
  *   · a visit count beside the handle (Jan, 2026-09-13). GitHub Pages runs
  *     no server, so it comes from GoatCounter (components/shell/
- *     visit-count.tsx). A real number or none: until it loads, or if it
- *     cannot, the line reads the role, as it did before.
+ *     visit-count.tsx). It replaced the role on that line (Jan, 2026-09-13).
+ *     A real number or none: until it loads, or if it cannot, the line
+ *     reads just the handle.
  *
  * `avatarSrc` is resolved at build time by lib/avatar.ts. Hidden below `lg`;
  * components/shell/mobile-bar.tsx covers that.
@@ -99,7 +100,8 @@ export function Rail({ avatarSrc }: { avatarSrc: string | null }) {
             <VerifiedBadge size={18} />
           </p>
           <p className="mt-1 text-sm text-text-3">
-            @ancientsky14 · <VisitCount fallback={SITE.role} />
+            @ancientsky14
+            <VisitCount />
           </p>
 
           <div className="mt-6 flex items-center gap-2">

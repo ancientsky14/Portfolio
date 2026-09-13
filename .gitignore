@@ -14,6 +14,9 @@ tmp-shots/
 
 # uncut tour recordings kept by scripts/media/reencode.mjs — the short cut ships
 public/work/*/*.full.webm
+
+# Playwright MCP session output (page snapshots, console logs)
+.playwright-mcp/
 docs/
 PHASE-1.md
 PHASE-2.md
