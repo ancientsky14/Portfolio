@@ -4,72 +4,97 @@ import { useEffect, useState } from "react";
 import { SITE } from "@/lib/site";
 
 /**
- * "1,234 visits" beside the handle in the rail, after the reference shell.
+ * " · 1,234 visits" beside the handle in the rail, after the reference shell.
+ * It replaced the role on that line at Jan's request (2026-09-13).
  *
- * Read from GoatCounter's public total (components/analytics/goatcounter.tsx
- * does the counting): unique visitors, bots filtered. The number is real or
- * it is not shown — until it arrives, and whenever it cannot (no code set,
- * the setting off, a blocker, offline), this renders nothing and the line
- * reads just "@ancientsky14". It replaced the role on that line at Jan's
- * request (2026-09-13). Never a placeholder figure.
+ * Live, from the portfolio-visits Worker (workers/visits/, SITE.visitsApi),
+ * which replaced GoatCounter because its public total lagged hours:
  *
- * GoatCounter caches the total for up to four hours, so it moves a few times
- * a day. It is read once per visit and kept for 30 minutes in sessionStorage,
- * so moving between pages never refetches it.
+ *   · On load, one POST /hit per browser session adds this visitor (the
+ *     Worker counts a visitor once per Manila day) and returns the new total
+ *     at once — the visitor sees their own visit land.
+ *   · Then GET /count every 60 s while the tab is visible, and straight away
+ *     when it becomes visible again — other visitors arrive within a minute.
+ *   · Never counts on localhost or in an automated browser; those only read.
+ *
+ * A real number or nothing: until it loads, or when it cannot (no API set,
+ * offline, blocked), this renders nothing and the line reads just the
+ * handle. Never a placeholder figure.
  */
 
-const KEY = "visit-count";
-const FRESH_MS = 30 * 60 * 1000;
+const HIT_KEY = "visit-hit";
+const POLL_MS = 60_000;
 
-/** Renders " · 1,234 visits" (separator included), or nothing. */
+function mayCount(): boolean {
+  const host = window.location.hostname;
+  if (host === "localhost" || host === "127.0.0.1" || host === "[::1]") return false;
+  if (navigator.webdriver) return false;
+  try {
+    return sessionStorage.getItem(HIT_KEY) !== "1";
+  } catch {
+    return true;
+  }
+}
+
 export function VisitCount() {
-  const code = SITE.goatcounter;
-  const [count, setCount] = useState<string | null>(null);
+  const api = SITE.visitsApi;
+  const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!code) return;
+    if (!api) return;
+    let alive = true;
 
-    try {
-      const cached = JSON.parse(sessionStorage.getItem(KEY) ?? "null") as
-        | { value: string; at: number }
-        | null;
-      if (cached && Date.now() - cached.at < FRESH_MS) {
-        setCount(cached.value);
-        return;
+    const take = (body: { count?: unknown }) => {
+      if (alive && typeof body.count === "number" && Number.isFinite(body.count) && body.count >= 0) {
+        setCount(body.count);
       }
-    } catch {
-      // Storage blocked or unreadable — fetch instead.
-    }
+    };
 
-    const ctrl = new AbortController();
-    fetch(`https://${code}.goatcounter.com/counter/TOTAL.json`, {
-      signal: ctrl.signal,
-    })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((j: { count?: string }) => {
-        // `count` arrives pre-formatted ("1,234" or "1 234"): keep the digits.
-        // A missing count is not zero — show nothing rather than "0".
-        const digits = String(j.count ?? "").replace(/\D/g, "");
-        if (!digits) return;
-        const value = Number(digits).toLocaleString("en-PH");
-        setCount(value);
+    const read = () =>
+      fetch(`${api}/count`, { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+        .then(take)
+        .catch(() => {});
+
+    const start = async () => {
+      if (!mayCount()) return read();
+      try {
+        // No body and no custom headers: a simple CORS request, no preflight.
+        const r = await fetch(`${api}/hit`, { method: "POST", keepalive: true });
+        if (!r.ok) return read();
+        take(await r.json());
         try {
-          sessionStorage.setItem(KEY, JSON.stringify({ value, at: Date.now() }));
+          sessionStorage.setItem(HIT_KEY, "1");
         } catch {
-          // Not cached this time; nothing else depends on it.
+          // Storage blocked: the Worker's per-day key still stops a recount.
         }
-      })
-      .catch(() => {});
+      } catch {
+        return read();
+      }
+    };
 
-    return () => ctrl.abort();
-  }, [code]);
+    void start();
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") void read();
+    }, POLL_MS);
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void read();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [api]);
 
   if (count === null) return null;
   return (
     <>
       {" · "}
       <span className="font-semibold text-text-2">
-        {count} visit{count === "1" ? "" : "s"}
+        {count.toLocaleString("en-PH")} visit{count === 1 ? "" : "s"}
       </span>
     </>
   );

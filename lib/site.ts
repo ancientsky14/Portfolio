@@ -49,14 +49,13 @@ export const SITE = {
   credit: "© Kenneth Villar",
 
   /**
-   * GoatCounter site code — the "NAME" in NAME.goatcounter.com. Drives the
-   * visit count beside the handle in the rail (components/shell/
-   * visit-count.tsx) and the counting script (components/analytics/
-   * goatcounter.tsx). Jan's choice, 2026-09-13.
+   * The live visit counter — the portfolio-visits Cloudflare Worker in
+   * workers/visits/, no trailing slash. Drives the count beside the handle in
+   * the rail (components/shell/visit-count.tsx). Replaced GoatCounter, whose
+   * public total lagged up to four hours (Jan, 2026-09-13).
    *
-   * Account created by Jan, 2026-09-13. "Allow adding visitor counts on your
-   * website" must stay on in its site settings, or the rail shows `role`.
-   * Set to null to switch counting and the count off entirely.
+   * Deployed by Jan to his own Cloudflare account, 2026-09-13. Set to null to
+   * switch counting and the count off; the rail then shows just the handle.
    */
-  goatcounter: "ancientsky14" as string | null,
+  visitsApi: "https://portfolio-visits.ancientsky14.workers.dev" as string | null,
 } as const;

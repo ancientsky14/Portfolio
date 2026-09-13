@@ -17,6 +17,10 @@ public/work/*/*.full.webm
 
 # Playwright MCP session output (page snapshots, console logs)
 .playwright-mcp/
+
+# visits Worker — local D1 state and local secrets
+workers/visits/.wrangler/
+workers/visits/.dev.vars
 docs/
 PHASE-1.md
 PHASE-2.md

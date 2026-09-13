@@ -1,0 +1,33 @@
+// portfolio-visits — the live visit count beside the handle in the rail.
+// Deploy to Jan's OWN Cloudflare account, never a client's.
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "portfolio-visits",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-09-01",
+	"d1_databases": [
+		{
+			"binding": "VISITS_DB",
+			"database_name": "portfolio-visits",
+			// Paste the id printed by `npx wrangler d1 create portfolio-visits`.
+			"database_id": "83fd7b22-382d-4dcf-b9e0-053ecbc59aed",
+			"migrations_dir": "migrations"
+		}
+	],
+	"vars": {
+		// Who may read the count (GET /count).
+		"READ_ORIGINS": "https://ancientsky14.github.io,http://localhost:3000",
+		// Who may add a visit (POST /hit) — the live site only.
+		"HIT_ORIGINS": "https://ancientsky14.github.io"
+	},
+	// 02:00 Asia/Manila: drop visitor keys older than two days. Only the total
+	// is kept long-term.
+	"triggers": {
+		"crons": [
+			"0 18 * * *"
+		]
+	},
+	"observability": {
+		"enabled": true
+	}
+}

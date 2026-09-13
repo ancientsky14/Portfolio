@@ -28,9 +28,10 @@ import { VisitCount } from "./visit-count";
  *   · a generic check badge beside the name (Jan, 2026-09-13) — never a
  *     platform's verified mark, which would claim a verification that does
  *     not exist (components/shell/verified-badge.tsx).
- *   · a visit count beside the handle (Jan, 2026-09-13). GitHub Pages runs
- *     no server, so it comes from GoatCounter (components/shell/
- *     visit-count.tsx). It replaced the role on that line (Jan, 2026-09-13).
+ *   · a live visit count beside the handle (Jan, 2026-09-13). GitHub Pages
+ *     runs no server, so it comes from the portfolio-visits Worker
+ *     (workers/visits/, components/shell/visit-count.tsx). It replaced the
+ *     role on that line (Jan, 2026-09-13).
  *     A real number or none: until it loads, or if it cannot, the line
  *     reads just the handle.
  *
