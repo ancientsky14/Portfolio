@@ -164,7 +164,8 @@ try {
     const status = await visit(page, `${PUBLIC}${route}`);
     if (status >= 400) { console.log(`  skip   ${route} (${status})`); continue; }
     await shot(page, path.join(dir, `1${n}-public-${name}.jpg`));
-    await tourScroll(page, 2400);
+    // Short holds: the banner loops ~40 s, not a 2.5-minute walkthrough.
+    await tourScroll(page, 1600);
     n++;
   }
 

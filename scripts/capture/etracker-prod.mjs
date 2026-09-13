@@ -200,7 +200,8 @@ try {
       poster = true;
     }
     await shot(page, path.join(dir, `1${n}-${name}.jpg`));
-    await tourScroll(page, 2200);
+    // Short holds: the banner loops ~40 s, not a 3-minute walkthrough.
+    await tourScroll(page, 1400);
     n++;
   }
 

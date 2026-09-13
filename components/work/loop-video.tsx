@@ -59,7 +59,20 @@ export function LoopVideo({
       { threshold: 0.25 },
     );
     io.observe(v);
-    return () => io.disconnect();
+
+    // A hidden tab keeps decoding in some browsers. Stop, and pick up again
+    // on return — the page behind this one is already busy (Lenis, GSAP and
+    // the background canvas), and decode competes with all three.
+    const onVisibility = () => {
+      if (document.hidden) v.pause();
+      else if (allowed) v.play().catch(() => {});
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [allowed]);
 
   return (
@@ -70,6 +83,7 @@ export function LoopVideo({
       muted
       loop
       playsInline
+      disablePictureInPicture
       preload="none"
       aria-label={label}
       className="size-full object-cover object-top"

@@ -68,7 +68,10 @@ export function LivePreview({
         </div>
       )}
 
-      <div className="relative aspect-video bg-surface-2">
+      {/* 8:5 — the exact shape of the recordings and screenshots (a
+          1440x900 viewport, encoded at 960x600). `aspect-video` cropped and
+          rescaled every frame, which cost sharpness for nothing. */}
+      <div className="relative aspect-[8/5] bg-surface-2">
         {video ? (
           <LoopVideo
             src={video.src}

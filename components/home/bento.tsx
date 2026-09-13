@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { getAllWork, displayClient } from "@/lib/content";
 import { STEPS } from "@/lib/engagement";
-import { avatarSrc } from "@/lib/avatar";
+import { confirmedCredentials } from "@/lib/about";
 import { SERVICES } from "@/lib/services";
 
 /**
@@ -25,7 +25,7 @@ import { SERVICES } from "@/lib/services";
  * description and a real visual.
  *
  *   Work       the four products, in a window mock
- *   About      the portrait (or monogram) on a card stack
+ *   About      the confirmed credentials from lib/about.ts
  *   Shipped    each product with its status and version, from frontmatter
  *   Updates    "I stay on after launch" — step 4 in lib/engagement.ts
  *   Services   what I build, as a numbered list
@@ -93,7 +93,6 @@ export function Bento() {
   const work = getAllWork();
   const clients = work.filter((w) => w.client !== "Own product");
   const updates = STEPS.find((s) => s.n === 4 && s.confirmed);
-  const avatar = avatarSrc();
 
   return (
     <section
@@ -152,34 +151,40 @@ export function Bento() {
             </div>
           </Card>
 
-          {/* ABOUT — portrait on a card stack */}
+          {/* ABOUT — the confirmed credentials (lib/about.ts). Not the
+              portrait: the rail carries that a few hundred pixels away, and
+              a second copy said nothing new (Jan, 2026-09-12). */}
           <Card
             href="/about"
             icon={UserRound}
             title="About"
             blurb="Who I am, how I work, and what I'm open to."
-            row
           >
-            <div aria-hidden="true" className="home-fit__stack relative mx-auto mt-2 h-32 w-36">
-              <span className="absolute inset-0 -rotate-6 rounded-md border border-line bg-surface-2" />
-              <span className="absolute inset-0 rotate-3 rounded-md border border-line bg-surface-2" />
-              <span className="absolute inset-0 grid place-items-center overflow-hidden rounded-md border border-line bg-surface shadow-soft">
-                {avatar ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={avatar}
-                    alt=""
-                    width={144}
-                    height={128}
-                    className="size-full object-contain object-bottom"
-                  />
-                ) : (
-                  <span className="font-display text-2xl font-bold tracking-tight text-accent">
-                    JLR
-                  </span>
-                )}
-              </span>
-            </div>
+            {/* Titles only: the card is one column wide, and the issuer and
+                date (c.meta) do not fit beside them. They stay as the row's
+                tooltip, and /about carries them in full. */}
+            <ul className="home-fit__list flex flex-col gap-1.5">
+              {confirmedCredentials()
+                .slice(0, 3)
+                .map((c) => {
+                  const Icon = c.icon;
+                  return (
+                    <li
+                      key={c.title}
+                      title={`${c.title} — ${c.meta}`}
+                      className="flex items-start gap-2 rounded-md border border-line bg-surface px-2.5 py-1.5 text-xs font-semibold leading-tight text-text"
+                    >
+                      <Icon
+                        size={13}
+                        strokeWidth={1.75}
+                        aria-hidden="true"
+                        className="mt-px shrink-0 text-accent"
+                      />
+                      <span className="min-w-0">{c.title}</span>
+                    </li>
+                  );
+                })}
+            </ul>
           </Card>
 
           {/* SHIPPED — status and version, from frontmatter */}

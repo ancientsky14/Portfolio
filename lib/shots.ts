@@ -40,7 +40,9 @@ export function mediaFor(slug: string): Media {
   const files = fs.readdirSync(dir).sort();
   const stem = (f: string) => f.replace(/\.[^.]+$/, "");
 
-  const videoFiles = files.filter((f) => VIDEO.test(f));
+  // `*.full.webm` is the uncut original kept by scripts/media/reencode.mjs.
+  // It sorts before the short cut and is gitignored — never serve it.
+  const videoFiles = files.filter((f) => VIDEO.test(f) && !/\.full\.[^.]+$/i.test(f));
   const posterStems = new Set(videoFiles.map(stem));
   const imageFiles = files.filter((f) => IMAGE.test(f));
 

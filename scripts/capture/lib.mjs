@@ -17,8 +17,12 @@ import path from "node:path";
 import os from "node:os";
 
 export const VIEWPORT = { width: 1440, height: 900 };
-/** Recorded smaller than the viewport: roughly halves the file size. */
-export const VIDEO_SIZE = { width: 1280, height: 800 };
+/**
+ * Exactly half the viewport, so the downscale is clean and every frame gets
+ * four times the bits it got at 1280x800 for the same bitrate. The page
+ * frames this shape (8:5) without cropping.
+ */
+export const VIDEO_SIZE = { width: 960, height: 600 };
 
 const LOOPBACK = new Set(["127.0.0.1", "localhost", "[::1]"]);
 
@@ -42,25 +46,39 @@ export function tmpVideoDir() {
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** Scroll to the bottom and back, smoothly, over roughly `ms`. */
+/**
+ * Scroll down and back up over roughly `ms`, eased, one position per
+ * animation frame.
+ *
+ * The first version jumped every ~40 ms with setTimeout. The recorder samples
+ * on paint, so each jump was baked into the video as a hitch — most of the
+ * judder Jan saw on the LMIS banner (2026-09-13). requestAnimationFrame moves
+ * by fractions of a pixel each frame instead.
+ */
 export async function tourScroll(page, ms = 3000) {
   await page.evaluate(async (total) => {
     const el = document.scrollingElement ?? document.documentElement;
     const max = el.scrollHeight - window.innerHeight;
+    const wait = (t) => new Promise((r) => setTimeout(r, t));
     if (max <= 40) {
-      await new Promise((r) => setTimeout(r, total));
+      await wait(total);
       return;
     }
-    const steps = Math.max(20, Math.round(total / 40));
-    const half = Math.round(steps / 2);
-    for (let i = 1; i <= half; i++) {
-      window.scrollTo(0, (max * i) / half);
-      await new Promise((r) => setTimeout(r, total / steps));
-    }
-    for (let i = half; i >= 0; i--) {
-      window.scrollTo(0, (max * i) / half);
-      await new Promise((r) => setTimeout(r, total / steps / 2));
-    }
+    const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
+    const glide = (from, to, dur) =>
+      new Promise((resolve) => {
+        const t0 = performance.now();
+        const step = (now) => {
+          const p = Math.min(1, (now - t0) / dur);
+          window.scrollTo(0, from + (to - from) * ease(p));
+          if (p < 1) requestAnimationFrame(step);
+          else resolve();
+        };
+        requestAnimationFrame(step);
+      });
+    await glide(0, max, total * 0.62);
+    await wait(total * 0.12);
+    await glide(max, 0, total * 0.26);
   }, ms);
 }
 

@@ -11,6 +11,9 @@ next-env.d.ts
 
 # local verification screenshots (headless Edge) — never committed
 tmp-shots/
+
+# uncut tour recordings kept by scripts/media/reencode.mjs — the short cut ships
+public/work/*/*.full.webm
 docs/
 PHASE-1.md
 PHASE-2.md
