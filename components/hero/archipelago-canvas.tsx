@@ -57,9 +57,10 @@ const VERT = /* glsl */ `
     vec3 pos = mix(aScatter, aTarget, eased);
 
     // Breathing — slow, small, and scaled by how resolved the field is.
-    float breathe = sin(uTime * 0.35 + aSeed * 6.2831) * 0.045 * eased;
+    // Speeds raised ~1.5x on 2026-09-13 (Jan: "a little faster"); amplitudes unchanged.
+    float breathe = sin(uTime * 0.55 + aSeed * 6.2831) * 0.045 * eased;
     pos.xy += normalize(pos.xy + 0.0001) * breathe;
-    pos.z += sin(uTime * 0.28 + aSeed * 12.0) * 0.05 * eased;
+    pos.z += sin(uTime * 0.45 + aSeed * 12.0) * 0.05 * eased;
 
     // Pointer repulsion, damped by distance. Only meaningful once resolved.
     vec2 away = pos.xy - uMouse;
@@ -337,14 +338,14 @@ export default function ArchipelagoCanvas() {
       if (hidden) return;
       timer.update();
       uniforms.uTime.value = timer.getElapsed();
-      uniforms.uMouse.value.lerp(mouseTarget, 0.08);
-      uniforms.uAttract.value.lerp(attractTarget, 0.1);
+      uniforms.uMouse.value.lerp(mouseTarget, 0.12);
+      uniforms.uAttract.value.lerp(attractTarget, 0.14);
       uniforms.uPull.value += (pullTarget - uniforms.uPull.value) * 0.06;
       uniforms.uRipple.value += (ripple - uniforms.uRipple.value) * 0.12;
       ripple *= 0.9;
       // Drift: the field rises and turns a touch as the page scrolls.
-      points.position.y += (drift * 0.9 - points.position.y) * 0.06;
-      points.rotation.z += (drift * 0.05 - points.rotation.z) * 0.06;
+      points.position.y += (drift * 0.9 - points.position.y) * 0.09;
+      points.rotation.z += (drift * 0.05 - points.rotation.z) * 0.09;
       renderer.render(scene, camera);
     };
     gsap.ticker.add(tick);
