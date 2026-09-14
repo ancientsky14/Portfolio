@@ -207,8 +207,10 @@ The contact form (`components/contact/brief-form.tsx`) has two modes, fixed at
 build time. With `SITE.contactApi` and `SITE.turnstileSiteKey` both set
 (`CONTACT_SENDS`), it POSTs to the `portfolio-contact` Worker
 (`workers/contact/`: Turnstile, D1, Gmail SMTP, three sends an hour, messages
-deleted after 30/90 days). Otherwise — and as the fallback whenever sending
-fails — it composes the email in the visitor's own mail client. Both write
+deleted after 30/90 days). Otherwise it composes the email in the visitor's
+own mail client. When sending fails (a failed Gmail send is a 502, never
+200) the form never says "Sent": it offers the brief as a mailto link and a
+copy button the visitor clicks. Both write
 the same email through `lib/brief.ts`, whose `validateBrief()` is also the
 Worker's guard against header injection: keep one-line fields free of
 control characters.

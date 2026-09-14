@@ -11,10 +11,12 @@ import {
   CircleCheck,
   CircleHelp,
   Clock,
+  Copy,
   EyeOff,
   FileText,
   House,
   Lightbulb,
+  Mail,
   Minus,
   ScanSearch,
   Send,
@@ -36,9 +38,13 @@ import { Select, type SelectOption } from "@/components/ui/select";
  *     Cloudflare Turnstile check guards it; its script loads on this page
  *     only, and only in this mode.
  *   · Composing (either unset): the form opens the visitor's own mail app
- *     with the subject and body written, as it always has. It is also the
- *     fallback whenever sending fails or Turnstile cannot load — a blocked
- *     script never blocks a brief.
+ *     with the subject and body written, as it always has.
+ *
+ * When sending fails — the Worker is down, Gmail refused (502), or Turnstile
+ * cannot load — the form never says "Sent". It shows the brief ready to go:
+ * a mailto link and a copy button, both clicked by the visitor. A mailto
+ * opened by script after a slow request (SMTP can take 30s) may be refused by
+ * the browser for lacking a recent click, so it is not relied on.
  *
  * Both write the same email (composeBrief, lib/brief.ts). With JavaScript
  * off, `action="mailto:"` still hands the fields to the mail client.
@@ -53,8 +59,11 @@ type Status =
   | "check" // sending: submitted before the Turnstile check finished
   | "sending"
   | "sent"
-  | "fallback" // sending failed, the mail app was opened instead
+  | "fallback" // sending failed; the brief is offered for the mail app
   | "limited"; // the Worker's three-an-hour limit
+
+const SECONDARY =
+  "inline-flex items-center gap-2 rounded-full border border-line-2 bg-surface px-5 py-2.5 text-sm font-semibold text-text transition-colors hover:border-accent";
 
 const FIELD =
   "mt-2 w-full rounded-md border border-line bg-surface px-3.5 py-2.5 text-sm text-text placeholder:text-text-3 transition-colors focus:border-accent";
@@ -175,6 +184,9 @@ export function BriefForm() {
   const [sentTo, setSentTo] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [turnstileDown, setTurnstileDown] = useState(false);
+  // The brief as it was when sending failed — what the fallback link carries.
+  const [fallbackBrief, setFallbackBrief] = useState<Brief | null>(null);
+  const [copy, setCopy] = useState<"idle" | "done" | "failed">("idle");
 
   const widget = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
@@ -225,6 +237,8 @@ export function BriefForm() {
     if (status === "sending") return;
 
     const brief = readBrief(e.currentTarget, mode);
+    setFallbackBrief(null);
+    setCopy("idle");
 
     if (!CONTACT_SENDS) {
       window.location.href = mailto(brief);
@@ -234,7 +248,9 @@ export function BriefForm() {
 
     if (!token) {
       if (turnstileDown) {
+        // Still inside the click, so opening the mail app is allowed here.
         window.location.href = mailto(brief);
+        setFallbackBrief(brief);
         setStatus("fallback");
       } else {
         setStatus("check");
@@ -259,8 +275,19 @@ export function BriefForm() {
       setStatus("limited");
       return;
     }
-    window.location.href = mailto(brief);
+    setFallbackBrief(brief);
     setStatus("fallback");
+  }
+
+  async function copyBrief() {
+    if (!fallbackBrief) return;
+    const { subject, body } = composeBrief(fallbackBrief);
+    try {
+      await navigator.clipboard.writeText(`${subject}\n\n${body}`);
+      setCopy("done");
+    } catch {
+      setCopy("failed");
+    }
   }
 
   if (sent) {
@@ -277,7 +304,7 @@ export function BriefForm() {
         <button
           type="button"
           onClick={() => setStatus("idle")}
-          className="mt-6 inline-flex items-center rounded-full border border-line-2 bg-surface px-5 py-2.5 text-sm font-semibold text-text transition-colors hover:border-accent"
+          className={cn(SECONDARY, "mt-6")}
         >
           Write another
         </button>
@@ -297,8 +324,11 @@ export function BriefForm() {
         check: "Finish the verification check above, then send.",
         sending: "Sending…",
         sent: "",
-        fallback:
-          "It couldn't be sent from here, so your mail app opened with it instead — press send there.",
+        fallback: {
+          idle: "It didn't go through from here. Your brief is ready to send from your own mail app.",
+          done: `Copied — paste it into an email to ${SITE.email}.`,
+          failed: `Couldn't copy it here. Open it in your mail app, or email ${SITE.email}.`,
+        }[copy],
         limited: `That's the limit for now. Try again in an hour, or email ${SITE.email}.`,
       }[status];
 
@@ -478,6 +508,20 @@ export function BriefForm() {
           {note}
         </p>
       </div>
+
+      {/* Sending failed: the visitor's own click opens the mail app. */}
+      {status === "fallback" && fallbackBrief ? (
+        <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+          <a href={mailto(fallbackBrief)} className={SECONDARY}>
+            <Mail size={15} strokeWidth={2} aria-hidden="true" />
+            Open in your mail app
+          </a>
+          <button type="button" onClick={copyBrief} className={SECONDARY}>
+            <Copy size={15} strokeWidth={2} aria-hidden="true" />
+            Copy the brief
+          </button>
+        </div>
+      ) : null}
     </form>
   );
 }

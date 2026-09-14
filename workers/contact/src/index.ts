@@ -261,7 +261,10 @@ export default {
       console.error(
         `contact: message ${id} stored, email failed: ${err instanceof Error ? err.message : String(err)}`,
       );
-      return json({ stored: true, emailed: false }, 200, origin);
+      // Not 200: the brief did not reach Jan, so the form must not say it
+      // did. It hands the brief to the visitor's own mail app instead; the
+      // row stays as the backup (`WHERE emailed = 0`).
+      return json({ stored: true, emailed: false }, 502, origin);
     }
 
     await env.CONTACT_DB.prepare("UPDATE messages SET emailed = 1 WHERE id = ?1").bind(id).run();

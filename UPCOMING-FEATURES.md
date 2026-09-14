@@ -214,7 +214,10 @@ Jan, so it keeps its own code and secrets.
   → siteverify, hostname must be an allowed origin's (400) → at most 3 per
   salted IP hash per hour (429) → insert → send through `smtp.gmail.com:465`
   (From = `GMAIL_USER`, Reply-To = visitor) → `emailed = 1`. A failed send
-  still answers `200 { stored: true, emailed: false }`.
+  answers `502 { stored: true, emailed: false }` (was 200 until 2026-09-14,
+  which showed visitors "Sent" for a brief that never arrived); the form
+  then offers the brief as a mailto link and a copy button, both clicked by
+  the visitor, and the row stays as the backup.
 - `migrations/0001_init.sql` — `messages` as planned, plus an index on
   `(ip_hash, created_at)` for the rate limit.
 - `wrangler.jsonc` — `nodejs_compat` (worker-mailer's README requires it),
@@ -326,7 +329,9 @@ Password. Message 1 of that day is stored but unsent (the 534) — a test.
    and the Turnstile **site** key — never the secret. Claude sets both in
    `lib/site.ts`; Jan builds, commits and pushes.
 
-Reading a brief that was stored but not emailed:
+Reading a brief that was stored but not emailed — check after any
+`email failed` line in `npx wrangler tail` (the visitor may or may not have
+sent it from their mail app):
 
 ```powershell
 npx wrangler d1 execute portfolio-contact --remote --command "SELECT id, created_at, name, email, body_json FROM messages WHERE emailed = 0"
