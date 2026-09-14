@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
@@ -50,7 +49,12 @@ import { BG_EVENT, D, E, INTRO, STAGGER, type AttractDetail } from "@/lib/motion
  * and the pointer effects and transitions do not run at all.
  */
 
-gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin, MotionPathPlugin);
+// No ScrollTrigger (R9b, 2026-09-14): nothing here creates a trigger — the
+// reveals use IntersectionObserver and the spine its own scroll listener —
+// so its update/refresh calls did nothing, while the plugin was the largest
+// part of this chunk to parse and evaluate. Re-add it only with a real
+// trigger, and scroller: panelScroller().
+gsap.registerPlugin(SplitText, DrawSVGPlugin, MotionPathPlugin);
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const FINE_POINTER = "(hover: hover) and (pointer: fine)";
@@ -104,7 +108,6 @@ export function PageMotion() {
     });
     lenisRef.current = lenis;
 
-    lenis.on("scroll", ScrollTrigger.update);
     const raf = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
@@ -287,11 +290,7 @@ export function PageMotion() {
       },
     );
 
-    // Re-measure once the route's images and fonts have settled.
-    const id = window.setTimeout(() => ScrollTrigger.refresh(), 200);
-
     return () => {
-      window.clearTimeout(id);
       mm.revert();
     };
   }, [pathname, a11yTick]);

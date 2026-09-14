@@ -45,7 +45,9 @@ instantly as "AI-generated portfolio". Don't install them.
 **Motion division of labour** (see `lib/motion.ts`):
 
 - GSAP owns scroll-scrubbed timelines, pinning, the hero sequence, SplitText,
-  DrawSVG, Flip.
+  DrawSVG, Flip. ScrollTrigger is **not loaded** (R9b, 2026-09-14): nothing
+  created a trigger — reveals use IntersectionObserver — so it was dead
+  weight. Register it again only together with a real trigger.
 - `motion` owns whatever ships inside a library component — hover, mount.
 - **Never both on the same property of the same element.** To GSAP a library
   component, wrap it in a plain `div` and animate the wrapper.
@@ -94,7 +96,7 @@ and palette. Read `PLAN-V2.md` before changing layout or tokens.
 | R6 | Pages export, socials + icons, MDX bodies, brief form, re-tokenized registry pieces | **done** |
 | R7 | Repositioning — product developer, eBudget added, drafts corrected | **done** |
 | R8 | Reference shell + components — panel scroll, work viewer, tab bar, intro | **done** |
-| R9 | Hardening — budgets, keyboard + contrast pass (OG image done in `UPCOMING-FEATURES.md` Phase 1) | **partial** 2026-09-14: a11y 100, JS/CLS met; LCP 2.2–2.6s, Performance 72–79, real Android unmeasured — `UPCOMING-FEATURES.md` "R9" |
+| R9 | Hardening — budgets, keyboard + contrast pass (OG image done in `UPCOMING-FEATURES.md` Phase 1) | **partial** 2026-09-14: a11y 100, JS/CLS met; LCP 2.2–2.6s, Performance 70–79, real Android unmeasured. R9b profiled it: the floor is Next/React hydration, not site code — `UPCOMING-FEATURES.md` "R9", "R9b" |
 
 ### The shell
 

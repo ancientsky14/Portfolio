@@ -543,18 +543,51 @@ simulated). Removing it would cost Jan's design and gain nothing.
 - 554 rendered text nodes axe could not decide (glass, gradients,
   pseudo-elements) checked by sampling pixels: all pass AA.
 
-### Still open — performance (next, if Jan wants it)
+### R9b — the speed pass (2026-09-14): what the profile showed
 
-Main-thread work under 4× CPU is what holds Performance at 72–79:
+Live after R9, real throttling, 3 runs: `/` Performance 70 · LCP 2.48 s ·
+TBT 1258 ms; `/work/` 75 · 2.34 s · 740 ms; `/contact/` 73 · 2.28 s · 969 ms.
+Accessibility 100, axe 0 violations, first-load JS 153–174 KB — R9 holds live.
 
-1. **Hydration.** `/work/` has an ~870 ms long task in React hydrating the
-   page. Smaller client components, or server-rendering more of the gallery,
-   would cut it.
-2. **Motion setup.** The motion chunk runs ~630 ms of script when it arrives
-   (SplitText, ScrollTrigger). Setting up only what is on screen, then the
-   rest on idle, would spread it out.
-3. **Fonts.** Three woff2 files, ~106 KB, sit between the HTML and the LCP
+Profiled with a `next build --profile` build and CDP traces at 4× CPU,
+then A/B'd by injecting CSS and blocking chunks (interleaved runs):
+
+- **The floor is Next/React startup, not this site's code.** With `<main>`
+  hidden entirely, blocking time stays ~1000 ms on `/`; with the three.js
+  and motion chunks both blocked it is ~870 ms on `/` and ~620 ms on
+  `/work/`. That is hydration of the App Router shell and parsing its inline
+  RSC payload. Cutting it means restructuring the shell — not done.
+- **The lazy enhancements are ~200 ms of it together:** three.js ~110 ms,
+  motion ~100 ms (mostly GSAP evaluating its own code; the setup touches only
+  0–2 split headings and 1–4 reveals per page).
+- **No single CSS property is to blame.** `text-wrap`, filters/masks,
+  shadows, web fonts and containment each moved nothing beyond noise
+  (±100 ms on this machine). The Lighthouse benchmark index here is ~2000,
+  so the 4× slowdown is calibrated, not exaggerated.
+
+**Done:** ScrollTrigger removed from `page-motion.tsx` — nothing created a
+trigger, so its update/refresh calls were dead. Lazy motion JS 85.6 → 69.1 KB
+gzip; motion verified unchanged (splits, Lenis, every reveal completes, the
+spine draws 0 → 100 %, the flow dots run).
+
+**Dead ends — don't repeat:**
+
+- *The work gallery split* (planned): `/work/` has the lowest floor of all,
+  so server-rendering its cards would gain little.
+- *Sending the marquee list once* and cloning it in the browser: HTML
+  207 → 162 KB and RSC payload 108 → 84 KB, but blocking time did not move
+  (the clone restores the same nodes). Built, measured, reverted.
+- *Chunking the motion setup*: nothing to chunk — see the counts above.
+
+### Still open — performance
+
+1. **Hydration floor** (~620–870 ms at 4× CPU): the only large lever left,
+   and a structural one (fewer client components in the shell).
+2. **Fonts.** Three woff2 files, ~106 KB, sit between the HTML and the LCP
    text on slow 4G.
+3. **The budget itself.** Lighthouse mobile ≥ 95 is unlikely with a WebGL
+   background, GSAP and the App Router shell; decide after step 4 whether the
+   site or the budget changes.
 4. **Real device.** None of this has been measured on a real mid-range
    Android on mobile data — the only number that counts. Steps: enable
    Developer options → USB debugging on the phone, connect it, open
