@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ArrowUpRight, Mail } from "lucide-react";
-import { SITE } from "@/lib/site";
+import { CONTACT_SENDS, SITE } from "@/lib/site";
 import { SOCIALS } from "@/lib/socials";
 import { BrandIcon } from "@/components/icons/brand";
 import { BriefForm } from "@/components/contact/brief-form";
@@ -16,11 +16,12 @@ export const metadata: Metadata = {
  * Contact.
  *
  * Three ways in: email (the address is the guarantee — it works on a
- * locked-down desktop with scripts blocked), the brief form (which composes
- * an email in the visitor's own client, because Pages has no server, and
- * switches between a project brief and a job opportunity), and the four
- * profiles. A fourth, "Book a 30-min call", appears beside the email button
- * once SITE.bookingUrl is set.
+ * locked-down desktop with scripts blocked), the brief form (switches between
+ * a project brief and a job opportunity; sends through the portfolio-contact
+ * Worker once it is configured, otherwise composes an email in the visitor's
+ * own client — components/contact/brief-form.tsx), and the four profiles. A
+ * fourth, "Book a 30-min call", appears beside the email button once
+ * SITE.bookingUrl is set.
  */
 
 export default function Contact() {
@@ -75,9 +76,9 @@ export default function Contact() {
               Send a brief
             </h2>
             <p className="mt-2 max-w-xl text-sm text-text-2">
-              A few questions, for a project or a job opportunity. The answers
-              become an email in your own mail app — you read it before anything
-              is sent.
+              {CONTACT_SENDS
+                ? "A few questions, for a project or a job opportunity. It comes straight to my inbox, and the reply goes to the email you give."
+                : "A few questions, for a project or a job opportunity. The answers become an email in your own mail app — you read it before anything is sent."}
             </p>
 
             <div className="mt-8 rounded-md border border-glass-line bg-glass p-6 backdrop-blur-xl sm:p-8">

@@ -203,8 +203,15 @@ The one allowed Route Handler kind is a `force-static` GET that the export
 turns into a file — `app/og/[card]/route.tsx`, amended with Jan on 2026-09-14.
 Nothing runs when a visitor requests it.
 
-The contact form (`components/contact/brief-form.tsx`) composes an email in
-the visitor's own mail client — it posts nowhere.
+The contact form (`components/contact/brief-form.tsx`) has two modes, fixed at
+build time. With `SITE.contactApi` and `SITE.turnstileSiteKey` both set
+(`CONTACT_SENDS`), it POSTs to the `portfolio-contact` Worker
+(`workers/contact/`: Turnstile, D1, Gmail SMTP, three sends an hour, messages
+deleted after 30/90 days). Otherwise — and as the fallback whenever sending
+fails — it composes the email in the visitor's own mail client. Both write
+the same email through `lib/brief.ts`, whose `validateBrief()` is also the
+Worker's guard against header injection: keep one-line fields free of
+control characters.
 
 ### Share cards, search-engine data, booking (2026-09-14)
 

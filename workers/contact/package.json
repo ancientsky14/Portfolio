@@ -1,0 +1,20 @@
+{
+  "name": "portfolio-contact",
+  "private": true,
+  "description": "The portfolio contact form's sender — Cloudflare Worker + D1 + Gmail SMTP.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply portfolio-contact --local",
+    "db:migrate:remote": "wrangler d1 migrations apply portfolio-contact --remote",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "worker-mailer": "^1.2.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260911.1",
+    "typescript": "^5.9.2",
+    "wrangler": "^4.131.1"
+  }
+}

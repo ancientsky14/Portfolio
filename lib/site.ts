@@ -67,4 +67,17 @@ export const SITE = {
    * renders anywhere — never a link to a page that is not set up.
    */
   bookingUrl: null as string | null,
+
+  /**
+   * NEEDS: the portfolio-contact Worker's URL (workers/contact/, no trailing
+   * slash) and its Turnstile site key — public by design; the secret key lives
+   * only in the Worker. With both set, the brief form on /contact sends
+   * through the Worker (components/contact/brief-form.tsx). With either null
+   * it composes an email in the visitor's own mail app, as it always has.
+   */
+  contactApi: null as string | null,
+  turnstileSiteKey: null as string | null,
 } as const;
+
+/** The brief form sends through the Worker only when both halves are set. */
+export const CONTACT_SENDS = Boolean(SITE.contactApi && SITE.turnstileSiteKey);

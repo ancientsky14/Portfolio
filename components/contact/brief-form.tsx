@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeftRight,
   BadgeCheck,
@@ -8,6 +8,7 @@ import {
   BriefcaseBusiness,
   CalendarClock,
   CalendarRange,
+  CircleCheck,
   CircleHelp,
   Clock,
   EyeOff,
@@ -20,30 +21,40 @@ import {
   Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SITE } from "@/lib/site";
+import { CONTACT_SENDS, SITE } from "@/lib/site";
+import { BRIEF_LIMITS, composeBrief, type Brief, type BriefMode } from "@/lib/brief";
 import { Select, type SelectOption } from "@/components/ui/select";
 
 /**
  * The contact form — a project brief, or a job opportunity.
  *
- * GitHub Pages runs no server, so there is no endpoint to POST to. Instead
- * the form composes an email: on submit it opens the visitor's own mail
- * client with the subject and body already written.
+ * Two ways to deliver it, fixed at build time by lib/site.ts:
  *
- * Why this and not a third-party form service:
- *   · nothing the visitor types passes through anyone but their own mail
- *     provider
- *   · the reply comes from their real address, so there is no "did the form
- *     actually send?" ambiguity
- *   · zero accounts, keys or quotas to maintain
+ *   · Sending (SITE.contactApi and SITE.turnstileSiteKey both set): the brief
+ *     is POSTed to the portfolio-contact Worker (workers/contact/), which
+ *     stores it and emails it to Jan with Reply-To set to the visitor. A
+ *     Cloudflare Turnstile check guards it; its script loads on this page
+ *     only, and only in this mode.
+ *   · Composing (either unset): the form opens the visitor's own mail app
+ *     with the subject and body written, as it always has. It is also the
+ *     fallback whenever sending fails or Turnstile cannot load — a blocked
+ *     script never blocks a brief.
+ *
+ * Both write the same email (composeBrief, lib/brief.ts). With JavaScript
+ * off, `action="mailto:"` still hands the fields to the mail client.
  *
  * The switch at the top changes both the fields and the email's subject,
  * so a recruiter's message and a client's brief never land looking alike.
- * With JavaScript off, `action="mailto:"` still hands the project fields to
- * the mail client as plain text.
  */
 
-type Mode = "project" | "role";
+type Status =
+  | "idle"
+  | "opened" // composing: the mail app was opened
+  | "check" // sending: submitted before the Turnstile check finished
+  | "sending"
+  | "sent"
+  | "fallback" // sending failed, the mail app was opened instead
+  | "limited"; // the Worker's three-an-hour limit
 
 const FIELD =
   "mt-2 w-full rounded-md border border-line bg-surface px-3.5 py-2.5 text-sm text-text placeholder:text-text-3 transition-colors focus:border-accent";
@@ -78,58 +89,218 @@ const SETUP: SelectOption[] = [
   { value: "On-site", label: "On-site", icon: Building2 },
 ];
 
-function val(data: FormData, key: string) {
-  return String(data.get(key) ?? "").trim();
+/* ── Turnstile ─────────────────────────────────────────────────────── */
+
+type Turnstile = {
+  render(container: HTMLElement, options: Record<string, unknown>): string;
+  reset(widgetId: string): void;
+  remove(widgetId: string): void;
+};
+
+declare global {
+  interface Window {
+    turnstile?: Turnstile;
+  }
+}
+
+/** Cloudflare's own URL — it must not be proxied or cached (their docs). */
+const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+
+let turnstileLoading: Promise<Turnstile> | null = null;
+
+function loadTurnstile(): Promise<Turnstile> {
+  if (window.turnstile) return Promise.resolve(window.turnstile);
+  turnstileLoading ??= new Promise<Turnstile>((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = TURNSTILE_SRC;
+    script.async = true;
+    script.onload = () =>
+      window.turnstile ? resolve(window.turnstile) : reject(new Error("turnstile missing"));
+    script.onerror = () => reject(new Error("turnstile blocked"));
+    document.head.appendChild(script);
+  }).catch((err: unknown) => {
+    turnstileLoading = null; // let a later mount try again
+    throw err;
+  });
+  return turnstileLoading;
+}
+
+/* ── The form ──────────────────────────────────────────────────────── */
+
+function readBrief(form: HTMLFormElement, mode: BriefMode): Brief {
+  const d = new FormData(form);
+  const v = (key: string) => String(d.get(key) ?? "").trim();
+  return {
+    mode,
+    name: v("name"),
+    email: v("email"),
+    company: v("company"),
+    what: v("what"),
+    users: v("users"),
+    timeline: v("timeline"),
+    budget: v("budget"),
+    title: v("title"),
+    type: v("type"),
+    setup: v("setup"),
+    details: v("details"),
+  };
+}
+
+function mailto(brief: Brief): string {
+  const { subject, body } = composeBrief(brief);
+  return `mailto:${SITE.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+/** POST the brief; null when the request itself failed or timed out. */
+async function send(brief: Brief, token: string): Promise<Response | null> {
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), 20_000);
+  try {
+    return await fetch(`${SITE.contactApi}/contact`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...brief, token }),
+      signal: abort.signal,
+    });
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export function BriefForm() {
-  const [mode, setMode] = useState<Mode>("project");
-  const [opened, setOpened] = useState(false);
+  const [mode, setMode] = useState<BriefMode>("project");
+  const [status, setStatus] = useState<Status>("idle");
+  const [sentTo, setSentTo] = useState("");
+  const [token, setToken] = useState<string | null>(null);
+  const [turnstileDown, setTurnstileDown] = useState(false);
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const widget = useRef<HTMLDivElement>(null);
+  const widgetId = useRef<string | null>(null);
+  const done = useRef<HTMLDivElement>(null);
+
+  const sent = status === "sent";
+
+  // The Turnstile widget: sending mode only, and only while the form shows.
+  useEffect(() => {
+    if (!CONTACT_SENDS || sent) return;
+    let cancelled = false;
+
+    loadTurnstile()
+      .then((ts) => {
+        if (cancelled || !widget.current) return;
+        widgetId.current = ts.render(widget.current, {
+          sitekey: SITE.turnstileSiteKey,
+          action: "contact",
+          size: "flexible",
+          theme: document.documentElement.classList.contains("dark") ? "dark" : "light",
+          callback: (t: string) => {
+            setToken(t);
+            setStatus((s) => (s === "check" ? "idle" : s));
+          },
+          "expired-callback": () => setToken(null),
+          "error-callback": () => setToken(null),
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setTurnstileDown(true);
+      });
+
+    return () => {
+      cancelled = true;
+      if (widgetId.current) window.turnstile?.remove(widgetId.current);
+      widgetId.current = null;
+      setToken(null);
+    };
+  }, [sent]);
+
+  // Move focus to the confirmation, so it is announced and Tab starts there.
+  useEffect(() => {
+    if (sent) done.current?.focus();
+  }, [sent]);
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const d = new FormData(e.currentTarget);
-    const name = val(d, "name");
-    const company = val(d, "company");
+    if (status === "sending") return;
 
-    let subject: string;
-    let lines: string[];
+    const brief = readBrief(e.currentTarget, mode);
 
-    if (mode === "project") {
-      subject = `Project brief — ${company || name}`;
-      lines = [
-        `Name: ${name}`,
-        company ? `Company / organisation: ${company}` : "",
-        "",
-        "What I want built:",
-        val(d, "what"),
-        "",
-        val(d, "users") ? `Who will use it: ${val(d, "users")}` : "",
-        val(d, "timeline") ? `Timeline: ${val(d, "timeline")}` : "",
-        val(d, "budget") ? `Budget: ${val(d, "budget")}` : "",
-      ];
-    } else {
-      const title = val(d, "title");
-      subject = `Job opportunity — ${title}${company ? ` at ${company}` : ""}`;
-      lines = [
-        `Name: ${name}`,
-        `Company: ${company}`,
-        `Role: ${title}`,
-        val(d, "type") ? `Type: ${val(d, "type")}` : "",
-        val(d, "setup") ? `Work setup: ${val(d, "setup")}` : "",
-        "",
-        "Details:",
-        val(d, "details"),
-      ];
+    if (!CONTACT_SENDS) {
+      window.location.href = mailto(brief);
+      setStatus("opened");
+      return;
     }
 
-    const body = lines.filter((l, i, a) => l !== "" || a[i - 1] !== "").join("\n");
+    if (!token) {
+      if (turnstileDown) {
+        window.location.href = mailto(brief);
+        setStatus("fallback");
+      } else {
+        setStatus("check");
+      }
+      return;
+    }
 
-    window.location.href = `mailto:${SITE.email}?subject=${encodeURIComponent(
-      subject,
-    )}&body=${encodeURIComponent(body)}`;
-    setOpened(true);
+    setStatus("sending");
+    const res = await send(brief, token);
+
+    if (res?.ok) {
+      setSentTo(brief.email);
+      setStatus("sent");
+      return;
+    }
+
+    // A token is good for one verification, spent or not.
+    setToken(null);
+    if (widgetId.current) window.turnstile?.reset(widgetId.current);
+
+    if (res?.status === 429) {
+      setStatus("limited");
+      return;
+    }
+    window.location.href = mailto(brief);
+    setStatus("fallback");
   }
+
+  if (sent) {
+    return (
+      <div ref={done} tabIndex={-1} role="status" className="focus:outline-none">
+        <CircleCheck size={22} strokeWidth={1.75} aria-hidden="true" className="text-accent" />
+        <p className="mt-3 font-display text-xl font-semibold tracking-tight text-text">
+          Sent. Thank you.
+        </p>
+        <p className="mt-2 text-sm text-text-2">
+          It reached me. The reply will come to{" "}
+          <span className="font-medium text-text">{sentTo}</span>.
+        </p>
+        <button
+          type="button"
+          onClick={() => setStatus("idle")}
+          className="mt-6 inline-flex items-center rounded-full border border-line-2 bg-surface px-5 py-2.5 text-sm font-semibold text-text transition-colors hover:border-accent"
+        >
+          Write another
+        </button>
+      </div>
+    );
+  }
+
+  const note = !CONTACT_SENDS
+    ? status === "opened"
+      ? "Your mail app should have opened with this filled in. Nothing was sent yet — press send there."
+      : "Opens your own mail app with this filled in. Nothing is sent from this page."
+    : {
+        idle: turnstileDown
+          ? "The verification check didn't load, so sending will open your mail app instead."
+          : "Goes straight to my inbox and is kept at most 90 days. Your email is used only to reply.",
+        opened: "",
+        check: "Finish the verification check above, then send.",
+        sending: "Sending…",
+        sent: "",
+        fallback:
+          "It couldn't be sent from here, so your mail app opened with it instead — press send there.",
+        limited: `That's the limit for now. Try again in an hour, or email ${SITE.email}.`,
+      }[status];
 
   return (
     <form
@@ -170,7 +341,7 @@ export function BriefForm() {
                   checked={active}
                   onChange={() => {
                     setMode(o.v);
-                    setOpened(false);
+                    setStatus("idle");
                   }}
                   className="sr-only"
                 />
@@ -189,15 +360,37 @@ export function BriefForm() {
 
       <label className={LABEL}>
         Your name
-        <input name="name" required autoComplete="name" className={FIELD} />
+        <input
+          name="name"
+          required
+          autoComplete="name"
+          maxLength={BRIEF_LIMITS.name}
+          className={FIELD}
+        />
       </label>
 
-      <label className={LABEL}>
+      {/* Sending needs an address to reply to; a mail app already has one. */}
+      {CONTACT_SENDS ? (
+        <label className={LABEL}>
+          Your email
+          <input
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            maxLength={BRIEF_LIMITS.email}
+            className={FIELD}
+          />
+        </label>
+      ) : null}
+
+      <label className={cn(LABEL, CONTACT_SENDS && "sm:col-span-2")}>
         {mode === "project" ? "Company or organisation" : "Company"}
         <input
           name="company"
           required={mode === "role"}
           autoComplete="organization"
+          maxLength={BRIEF_LIMITS.company}
           className={FIELD}
         />
       </label>
@@ -210,6 +403,7 @@ export function BriefForm() {
               name="what"
               required
               rows={4}
+              maxLength={BRIEF_LIMITS.text}
               placeholder="The problem, not the solution — what is slow, manual or missing today."
               className={FIELD}
             />
@@ -219,6 +413,7 @@ export function BriefForm() {
             Who will use it?
             <input
               name="users"
+              maxLength={BRIEF_LIMITS.users}
               placeholder="Your team, your customers, the public…"
               className={FIELD}
             />
@@ -235,6 +430,7 @@ export function BriefForm() {
             <input
               name="title"
               required
+              maxLength={BRIEF_LIMITS.title}
               placeholder="e.g. Full-stack developer"
               className={FIELD}
             />
@@ -249,6 +445,7 @@ export function BriefForm() {
             <textarea
               name="details"
               rows={4}
+              maxLength={BRIEF_LIMITS.text}
               placeholder="A link to the posting, the team, the stack — whatever helps."
               className={FIELD}
             />
@@ -256,12 +453,19 @@ export function BriefForm() {
         </>
       )}
 
+      {/* Turnstile draws its check here. The height is held so the button
+          does not jump when it appears. */}
+      {CONTACT_SENDS && !turnstileDown ? (
+        <div ref={widget} className="min-h-16 sm:col-span-2" />
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-4 sm:col-span-2">
         <button
           type="submit"
-          className="group inline-flex items-center gap-2 rounded-full bg-accent py-2.5 pl-5 pr-4 text-sm font-medium text-accent-ink transition-opacity hover:opacity-90"
+          disabled={status === "sending"}
+          className="group inline-flex items-center gap-2 rounded-full bg-accent py-2.5 pl-5 pr-4 text-sm font-medium text-accent-ink transition-opacity hover:opacity-90 disabled:cursor-progress disabled:opacity-70"
         >
-          Write the email
+          {CONTACT_SENDS ? (status === "sending" ? "Sending…" : "Send") : "Write the email"}
           <Send
             size={15}
             strokeWidth={2}
@@ -271,9 +475,7 @@ export function BriefForm() {
         </button>
 
         <p aria-live="polite" className="text-sm text-text-3">
-          {opened
-            ? "Your mail app should have opened with this filled in. Nothing was sent yet — press send there."
-            : "Opens your own mail app with this filled in. Nothing is sent from this page."}
+          {note}
         </p>
       </div>
     </form>

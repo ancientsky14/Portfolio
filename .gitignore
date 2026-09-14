@@ -21,6 +21,10 @@ public/work/*/*.full.webm
 # visits Worker — local D1 state and local secrets
 workers/visits/.wrangler/
 workers/visits/.dev.vars
+
+# contact Worker — local D1 state and local secrets
+workers/contact/.wrangler/
+workers/contact/.dev.vars
 docs/
 PHASE-1.md
 PHASE-2.md

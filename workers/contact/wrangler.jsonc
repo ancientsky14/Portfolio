@@ -1,0 +1,39 @@
+// portfolio-contact — sends the contact form's briefs to Jan's inbox.
+// Deploy to Jan's OWN Cloudflare account, never a client's.
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "portfolio-contact",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-09-01",
+	// Required by worker-mailer (its README).
+	"compatibility_flags": ["nodejs_compat"],
+	"d1_databases": [
+		{
+			"binding": "CONTACT_DB",
+			"database_name": "portfolio-contact",
+			// Paste the id printed by `npx wrangler d1 create portfolio-contact`.
+			"database_id": "00000000-0000-0000-0000-000000000000",
+			"migrations_dir": "migrations"
+		}
+	],
+	"vars": {
+		// Who may send (POST /contact) — the live site only, as the visits
+		// Worker does. Local testing sets its own in .dev.vars.
+		"ALLOWED_ORIGINS": "https://ancientsky14.github.io",
+		// Where briefs go. The address is already public on the site.
+		"MAIL_TO": "janluigirivera@gmail.com"
+	},
+	// Secrets, never here: GMAIL_USER, GMAIL_APP_PASSWORD, TURNSTILE_SECRET,
+	// IP_SALT — `npx wrangler secret put <NAME>` (see UPCOMING-FEATURES.md).
+
+	// 02:15 Asia/Manila: delete emailed messages older than 30 days, and any
+	// message older than 90.
+	"triggers": {
+		"crons": [
+			"15 18 * * *"
+		]
+	},
+	"observability": {
+		"enabled": true
+	}
+}

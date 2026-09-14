@@ -12,7 +12,7 @@ Build in phase order. Each phase is independently shippable.
 | Phase | Feature | Needs from Jan |
 |---|---|---|
 | 1 | Share preview images, search-engine data, CV button, Book-a-call — **built 2026-09-14** | CV PDF, Cal.com link |
-| 2 | Contact form that really sends (Gmail SMTP) | Gmail App Password, Turnstile keys |
+| 2 | Contact form that really sends (Gmail SMTP) — **built 2026-09-14, not deployed** | Gmail App Password, Turnstile keys |
 | 3 | Testimonials | Real quotes + written permission |
 | 4 | Ctrl+K search | — |
 | 5 | Tagalog / English on key pages | Review of every Tagalog page |
@@ -200,69 +200,104 @@ open outbound TCP sockets (`cloudflare:sockets`); port 25 is blocked but
 for Workers) — check its README for required `compatibility_flags` before
 installing. Gmail consumer limit is roughly 500 recipients a day.
 
-### 2.1 Worker
+**Built 2026-09-14** — code complete and tested locally; it goes live when
+Jan does 2.3. Until `SITE.contactApi` and `SITE.turnstileSiteKey` are both
+set, the form behaves exactly as before.
 
-Recommendation: a **separate Worker** `workers/contact/` (not inside
-`workers/visits`). The Gmail App Password can send mail as Jan; keeping it in
-its own Worker keeps the visit counter's code and secrets apart.
+### 2.1 Worker — `workers/contact/`
 
-- `workers/contact/wrangler.jsonc` — D1 binding `CONTACT_DB`, vars
-  `ALLOWED_ORIGINS` (`https://ancientsky14.github.io,http://localhost:3000`),
-  `MAIL_TO` (Jan's address), `TURNSTILE_SITE_HOST` if needed.
-- `workers/contact/migrations/0001_init.sql` —
-  `messages(id INTEGER PRIMARY KEY, created_at TEXT, mode TEXT, name TEXT,
-  email TEXT, company TEXT, body_json TEXT, ip_hash TEXT, emailed INTEGER)`.
-- `workers/contact/src/index.ts` — `POST /contact`:
-  1. Origin must be in `ALLOWED_ORIGINS` → else 403.
-  2. Parse JSON; validate required fields and lengths (name ≤ 120, email
-     format, message ≤ 5,000 chars). Reject HTML-looking payloads.
-  3. Verify the Turnstile token:
-     `POST https://challenges.cloudflare.com/turnstile/v0/siteverify` with
-     `secret`, `response`, `remoteip` (`CF-Connecting-IP`). Fail → 400.
-  4. Rate limit: max 3 messages per salted IP hash per hour (count rows in
-     `messages`). Exceeded → 429.
-  5. Insert into `messages`.
-  6. Send via `smtp.gmail.com:465` with `worker-mailer`: From = Jan's Gmail,
-     To = `MAIL_TO`, **Reply-To = the visitor's email**, subject as the form
-     builds it today ("Project brief — …" / "Job opportunity — …"). Plain-text
-     body; escape nothing into HTML.
-  7. Mark `emailed = 1`. If sending fails, still return 200 with
-     `{ stored: true, emailed: false }` — the message is safe in D1.
-- Secrets: `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `TURNSTILE_SECRET`, `IP_SALT`.
-- No IPs stored — only the salted hash, as in `workers/visits`.
+A separate Worker from `workers/visits`: the App Password can send mail as
+Jan, so it keeps its own code and secrets.
+
+- `src/index.ts` — `POST /contact`, in this order: Origin (403) → body size
+  (413) → JSON (400) → Turnstile token present (400) → `validateBrief()` (400)
+  → siteverify, hostname must be an allowed origin's (400) → at most 3 per
+  salted IP hash per hour (429) → insert → send through `smtp.gmail.com:465`
+  (From = `GMAIL_USER`, Reply-To = visitor) → `emailed = 1`. A failed send
+  still answers `200 { stored: true, emailed: false }`.
+- `migrations/0001_init.sql` — `messages` as planned, plus an index on
+  `(ip_hash, created_at)` for the rate limit.
+- `wrangler.jsonc` — `nodejs_compat` (worker-mailer's README requires it),
+  `CONTACT_DB`, `ALLOWED_ORIGINS`, `MAIL_TO`, a daily cron.
+- `lib/brief.ts` (site root, bundled into the Worker) — `validateBrief()` and
+  `composeBrief()`, shared with the form so the mailto: email and the sent
+  email are the same text.
+
+Where it differs from the plan, and why:
+
+- **The form had no email field** — `mailto:` never needed one. Sending mode
+  adds "Your email" (required; it becomes Reply-To). Composing mode is unchanged.
+- **Header injection is the real "reject" rule.** worker-mailer writes ASCII
+  header values unencoded, and the name, company and role title reach the
+  Subject and Reply-To — so every one-line field rejects control characters
+  (CR/LF included), and the email address is a strict pattern with no quotes,
+  brackets or commas. "HTML-looking" is narrowed to markup tags and `href=`,
+  so a brief can still say "budget < 1M".
+- **`authType: ["plain", "login"]` is required.** worker-mailer has no
+  default: without it, it throws "No supported auth method found."
+- **`ALLOWED_ORIGINS` in wrangler.jsonc is the live site only**, as the
+  visits Worker's `HIT_ORIGINS` is. Local testing sets
+  `http://localhost:3000` in `.dev.vars`.
+- **Retention (not in the plan).** A daily cron deletes emailed messages
+  after 30 days and every message after 90 — the rate limit needs one hour,
+  and briefs are personal data. The form says "kept at most 90 days".
+- **Turnstile test secrets answer `hostname: "example.com"`** with
+  `metadata.result_with_testing_key: true` (Cloudflare's docs say
+  "localhost"). The hostname check is skipped only for that flag, which a
+  real secret never returns.
+- `TURNSTILE_SITE_HOST` was not needed — the allowed hostnames come from
+  `ALLOWED_ORIGINS`.
 
 ### 2.2 Site
 
-- `lib/site.ts` — `contactApi: null as string | null` and
-  `turnstileSiteKey: null as string | null`.
-- `components/contact/brief-form.tsx`:
-  - Load the Turnstile widget script
-    (`https://challenges.cloudflare.com/turnstile/v0/api.js`) only on the
-    Contact page, only when both values are set.
-  - On submit: `fetch(contactApi + "/contact", { method: "POST", body: JSON })`
-    with the token. Show sending / sent / error states in the form's existing
-    style. Keep both modes (project brief, job opportunity) and their fields.
-  - **Fallback:** if the Worker is not configured, the request fails, or
-    JavaScript is off, keep today's `mailto:` behaviour (`action="mailto:"`
-    already covers no-JS).
-  - Accessible status: `aria-live="polite"` region; focus the success
-    message.
+- `lib/site.ts` — `contactApi`, `turnstileSiteKey` (both null, NEEDS), and
+  `CONTACT_SENDS` (both set).
+- `components/contact/brief-form.tsx` — in sending mode: Turnstile loaded
+  from Cloudflare's URL on the Contact page only (explicit render, flexible
+  size, the site's theme); Send → "Sending…" → a confirmation that takes
+  focus, with "Write another". A 429 shows "That's the limit for now". Any
+  other failure — the Worker down, a 4xx/5xx, Turnstile blocked by an
+  extension — opens the visitor's mail app with the same email and says so.
+- `app/contact/page.tsx` — the intro line under "Send a brief" matches the
+  mode.
+
+Checked 2026-09-14 on the office PC (wrangler dev + test keys, and the real
+form in Chromium):
+
+- 22 `validateBrief` cases, CRLF-in-name and `<a href>` among them; the
+  composed emails read right.
+- Preflight from the allowed origin 204 with CORS headers, other origins
+  none; wrong or missing Origin 403; bad JSON, no token, CRLF, markup and a
+  bad email 400; oversized 413; always-fail secret 400 with nothing stored.
+- Valid briefs 200 `{stored:true, emailed:false}` — a real TLS session with
+  smtp.gmail.com:465 that Gmail answered `535-5.7.8 Username and Password not
+  accepted` for fake credentials — and the 4th in an hour 429. The error log
+  holds the message id, no personal data.
+- The cron deleted a 40-day emailed row and a 100-day unsent one, and kept
+  the recent rows and a 40-day unsent one.
+- In the browser: token → Send → confirmation focused; Worker unreachable,
+  429, and Turnstile blocked each show the right message and fall back.
+
+**Not verified:** a real email arriving (needs Jan's App Password), and the
+deployed Worker.
 
 ### 2.3 Jan does
 
 1. Google Account → Security → turn on **2-Step Verification**.
 2. Google Account → Security → **App passwords** → create one named
    "portfolio contact". Never paste it into chat or a file.
-3. Cloudflare dashboard → **Turnstile** → add site `ancientsky14.github.io`
-   (and `localhost`) → copy site key (public) and secret key.
-4. In `workers/contact`:
+3. Cloudflare dashboard → **Turnstile** → add a widget for
+   `ancientsky14.github.io` → copy the site key (public) and secret key.
+   `localhost` is not needed: local testing uses Cloudflare's test keys.
+4. In `workers/contact` (PowerShell):
 
-   ```bash
+   ```powershell
    npm install
-   npx wrangler d1 create portfolio-contact        # paste id into wrangler.jsonc
+   npx wrangler login                               # Jan's own account
+   npx wrangler d1 create portfolio-contact         # paste the id into wrangler.jsonc
    npx wrangler d1 migrations apply portfolio-contact --remote
    npx wrangler deploy                              # deploy BEFORE secrets
-   npx wrangler secret put GMAIL_USER
+   npx wrangler secret put GMAIL_USER               # the Gmail address that sends
    npx wrangler secret put GMAIL_APP_PASSWORD       # paste; input is hidden
    npx wrangler secret put TURNSTILE_SECRET
    node -e "process.stdout.write(require('crypto').randomBytes(32).toString('hex'))" | clip
@@ -272,17 +307,22 @@ its own Worker keeps the visit counter's code and secrets apart.
 
    Lesson from the visits Worker: on Windows, **piping** a value into
    `wrangler secret put` stored an empty secret. Use clipboard + paste.
-5. Send Claude the Worker URL and the Turnstile **site** key (never the
-   secret).
+5. Send Claude the Worker URL (`https://portfolio-contact.<subdomain>.workers.dev`)
+   and the Turnstile **site** key — never the secret. Claude sets both in
+   `lib/site.ts`; Jan builds, commits and pushes.
 
-### 2.4 Verify
+Reading a brief that was stored but not emailed:
 
-- Local: `npx wrangler dev` with `.dev.vars` (test secrets, Turnstile test
-  keys `1x00000000000000000000AA` / `1x0000000000000000000000000000000AA`).
-  Valid submission → 200 and an email arrives; wrong origin → 403; bad token
-  → 400; 4th message in an hour → 429; SMTP failure → stored, `emailed:false`.
-- Site: form sends, success state shows, Reply-To works; with `contactApi`
-  null the old `mailto:` still works.
+```powershell
+npx wrangler d1 execute portfolio-contact --remote --command "SELECT id, created_at, name, email, body_json FROM messages WHERE emailed = 0"
+```
+
+### 2.4 Verify after deploy
+
+- Send a real brief from the live Contact page → it arrives in Gmail, and
+  Reply goes to the address typed in the form.
+- `npx wrangler tail portfolio-contact` while sending shows no `email failed`.
+- A second browser without JavaScript still gets the mailto: form.
 
 ---
 
