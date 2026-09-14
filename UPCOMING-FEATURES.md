@@ -12,7 +12,7 @@ Build in phase order. Each phase is independently shippable.
 | Phase | Feature | Needs from Jan |
 |---|---|---|
 | 1 | Share preview images, search-engine data, CV button, Book-a-call — **built 2026-09-14** | CV PDF, Cal.com link |
-| 2 | Contact form that really sends (Gmail SMTP) — **built 2026-09-14, not deployed** | Gmail App Password, Turnstile keys |
+| 2 | Contact form that really sends (Gmail SMTP) — **live 2026-09-14** | Gmail App Password, Turnstile keys |
 | 3 | Testimonials | Real quotes + written permission |
 | 4 | Ctrl+K search | — |
 | 5 | Tagalog / English on key pages | Review of every Tagalog page |
@@ -278,8 +278,12 @@ form in Chromium):
 - In the browser: token → Send → confirmation focused; Worker unreachable,
   429, and Turnstile blocked each show the right message and fall back.
 
-**Not verified:** a real email arriving (needs Jan's App Password), and the
-deployed Worker.
+**Deployed and verified 2026-09-14:** a brief sent from the live /contact
+page passed Turnstile and was stored and emailed (`emailed = 1`). Two traps
+on the way, both in 2.3 below: `wrangler d1 create` renamed the binding,
+and IP_SALT was stored empty. A Gmail `534-5.7.9 Application-specific
+password required` means the normal Google password was given, not an App
+Password. Message 1 of that day is stored but unsent (the 534) — a test.
 
 ### 2.3 Jan does
 
