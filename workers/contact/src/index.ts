@@ -154,13 +154,20 @@ export default {
       return json({ error: "origin not allowed" }, 403, null);
     }
 
-    if (
-      !env.GMAIL_USER ||
-      !env.GMAIL_APP_PASSWORD ||
-      !env.TURNSTILE_SECRET ||
-      !env.IP_SALT ||
-      !env.MAIL_TO
-    ) {
+    // An empty secret counts as missing: on Windows, piping into
+    // `wrangler secret put` stores "". Names only in the log, never values.
+    const missing = (
+      [
+        "CONTACT_DB",
+        "GMAIL_USER",
+        "GMAIL_APP_PASSWORD",
+        "TURNSTILE_SECRET",
+        "IP_SALT",
+        "MAIL_TO",
+      ] as const
+    ).filter((name) => !env[name]);
+    if (missing.length > 0) {
+      console.error(`contact: not configured, missing ${missing.join(", ")}`);
       return json({ error: "not configured" }, 500, origin);
     }
 

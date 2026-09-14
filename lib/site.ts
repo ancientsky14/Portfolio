@@ -69,14 +69,18 @@ export const SITE = {
   bookingUrl: null as string | null,
 
   /**
-   * NEEDS: the portfolio-contact Worker's URL (workers/contact/, no trailing
-   * slash) and its Turnstile site key — public by design; the secret key lives
-   * only in the Worker. With both set, the brief form on /contact sends
-   * through the Worker (components/contact/brief-form.tsx). With either null
-   * it composes an email in the visitor's own mail app, as it always has.
+   * The portfolio-contact Worker's URL (workers/contact/, no trailing slash)
+   * and its Turnstile site key — public by design; the secret key lives only
+   * in the Worker. With both set, the brief form on /contact sends through
+   * the Worker (components/contact/brief-form.tsx). With either null it
+   * composes an email in the visitor's own mail app, as it always has.
+   *
+   * Deployed by Jan to his own Cloudflare account, 2026-09-14. The Turnstile
+   * widget allows ancientsky14.github.io only, so on localhost the check
+   * fails and the form falls back to the mail app — expected.
    */
-  contactApi: null as string | null,
-  turnstileSiteKey: null as string | null,
+  contactApi: "https://portfolio-contact.ancientsky14.workers.dev" as string | null,
+  turnstileSiteKey: "0x4AAAAAAEzXmC6xCFa2kh_A" as string | null,
 } as const;
 
 /** The brief form sends through the Worker only when both halves are set. */

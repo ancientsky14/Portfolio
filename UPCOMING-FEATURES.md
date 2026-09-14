@@ -292,21 +292,32 @@ deployed Worker.
 4. In `workers/contact` (PowerShell):
 
    ```powershell
+   cd workers/contact                               # NOT the repo root: there,
+                                                    # `wrangler deploy` tries to
+                                                    # convert the site to OpenNext
    npm install
    npx wrangler login                               # Jan's own account
-   npx wrangler d1 create portfolio-contact         # paste the id into wrangler.jsonc
+   npx wrangler d1 create portfolio-contact         # paste the id into wrangler.jsonc;
+                                                    # answer NO to adding a binding —
+                                                    # it renames CONTACT_DB and the
+                                                    # Worker answers 500
    npx wrangler d1 migrations apply portfolio-contact --remote
    npx wrangler deploy                              # deploy BEFORE secrets
    npx wrangler secret put GMAIL_USER               # the Gmail address that sends
    npx wrangler secret put GMAIL_APP_PASSWORD       # paste; input is hidden
    npx wrangler secret put TURNSTILE_SECRET
-   node -e "process.stdout.write(require('crypto').randomBytes(32).toString('hex'))" | clip
-   npx wrangler secret put IP_SALT                  # paste from clipboard
-   echo off | clip
+   # IP_SALT is random and never needs to be known — set it from a temp file:
+   $f = Join-Path $env:TEMP "ip-salt.json"
+   @{ IP_SALT = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)) } | ConvertTo-Json | Set-Content $f -Encoding utf8NoBOM
+   npx wrangler secret bulk $f
+   Remove-Item $f
    ```
 
    Lesson from the visits Worker: on Windows, **piping** a value into
-   `wrangler secret put` stored an empty secret. Use clipboard + paste.
+   `wrangler secret put` stored an empty secret. Use clipboard + paste — and
+   check it took: on 2026-09-14 a paste into the IP_SALT prompt also stored
+   "" (the prompt showed √). The Worker logs `contact: not configured,
+   missing <NAME>` (`npx wrangler tail`) for any empty secret.
 5. Send Claude the Worker URL (`https://portfolio-contact.<subdomain>.workers.dev`)
    and the Turnstile **site** key — never the secret. Claude sets both in
    `lib/site.ts`; Jan builds, commits and pushes.

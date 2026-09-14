@@ -6,13 +6,16 @@
 	"main": "src/index.ts",
 	"compatibility_date": "2026-09-01",
 	// Required by worker-mailer (its README).
-	"compatibility_flags": ["nodejs_compat"],
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
 	"d1_databases": [
 		{
+			// src/index.ts reads env.CONTACT_DB. `wrangler d1 create` offers to
+			// add a binding named after the database — keep this name instead.
 			"binding": "CONTACT_DB",
 			"database_name": "portfolio-contact",
-			// Paste the id printed by `npx wrangler d1 create portfolio-contact`.
-			"database_id": "00000000-0000-0000-0000-000000000000",
+			"database_id": "16b40fe5-0346-4627-9b4e-dfd6259f5b1e",
 			"migrations_dir": "migrations"
 		}
 	],
@@ -25,7 +28,6 @@
 	},
 	// Secrets, never here: GMAIL_USER, GMAIL_APP_PASSWORD, TURNSTILE_SECRET,
 	// IP_SALT — `npx wrangler secret put <NAME>` (see UPCOMING-FEATURES.md).
-
 	// 02:15 Asia/Manila: delete emailed messages older than 30 days, and any
 	// message older than 90.
 	"triggers": {
