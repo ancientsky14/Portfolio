@@ -146,7 +146,7 @@ export default function About() {
           {cv ? (
             <a
               href={cv}
-              download
+              download="Jan-Luigi-Rivera-CV.pdf"
               className="inline-flex items-center gap-2 rounded-full bg-text py-2.5 pl-4 pr-5 text-sm font-semibold text-ground transition-opacity hover:opacity-90"
             >
               <Download size={16} strokeWidth={2} aria-hidden="true" />

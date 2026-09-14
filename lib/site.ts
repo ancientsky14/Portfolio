@@ -60,13 +60,13 @@ export const SITE = {
   visitsApi: "https://portfolio-visits.ancientsky14.workers.dev" as string | null,
 
   /**
-   * NEEDS: Jan's Cal.com event link for a 30-minute call (a free cal.com
-   * account, the event connected to Google Calendar so busy times block).
+   * Jan's Cal.com 30-minute event — set 2026-09-14. The event page, not the
+   * profile (which also lists a 15-minute one): the button promises 30.
    * Drives the "Book a 30-min call" button in the home hero, on /services
-   * and on /contact (components/site/book-call.tsx). While null, no button
-   * renders anywhere — never a link to a page that is not set up.
+   * and on /contact (components/site/book-call.tsx). Set to null and no
+   * button renders anywhere.
    */
-  bookingUrl: null as string | null,
+  bookingUrl: "https://cal.com/jan-luigi-rivera-4zm6eu/30min" as string | null,
 
   /**
    * The portfolio-contact Worker's URL (workers/contact/, no trailing slash)

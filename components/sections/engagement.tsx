@@ -54,7 +54,6 @@ export function Engagement() {
                 fill="none"
                 stroke="var(--line-2)"
                 strokeWidth="1"
-                vectorEffect="non-scaling-stroke"
               />
             </svg>
 

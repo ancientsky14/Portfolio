@@ -11,7 +11,7 @@ Build in phase order. Each phase is independently shippable.
 
 | Phase | Feature | Needs from Jan |
 |---|---|---|
-| 1 | Share preview images, search-engine data, CV button, Book-a-call — **built 2026-09-14** | CV PDF, Cal.com link |
+| 1 | Share preview images, search-engine data, CV button, Book-a-call — **built 2026-09-14**, booking link set | CV web copy |
 | 2 | Contact form that really sends (Gmail SMTP) — **live 2026-09-14** | Gmail App Password, Turnstile keys |
 | 3 | Testimonials | Real quotes + written permission |
 | 4 | Ctrl+K search | — |
@@ -163,6 +163,21 @@ cv-clean.pdf`. ExifTool's PDF edits are an incremental update — reversible
 by design — so without the qpdf rewrite the old metadata is still in the
 file. Save the result as `public/cv.pdf`.
 
+**2026-09-14 — the public copy is a web version.** The first file
+(`CV_Resume.pdf`) was not used:
+
+- it carried the home barangay and a personal mobile number;
+- it said "Rust.js";
+- it had unmeasured percentages;
+- its Title metadata named the job it was written for;
+- it was made with Microsoft Print to PDF, which drops links.
+
+Jan decided: no street address or phone, and percentages only where measured,
+exported with Word *Save As → PDF* with *Document properties* unticked. No
+exiftool or qpdf on the office PC: Claude rewrites the file with pdf-lib,
+removing `/Info` and `/Metadata` and the objects they point to, as a full save.
+The About button downloads it as `Jan-Luigi-Rivera-CV.pdf`.
+
 **Verify.** `/about` shows the button; the download opens the PDF.
 
 ### 1.4 Book-a-call button
@@ -182,8 +197,9 @@ rendered only for an https link — in three places:
 - `/services` — under the header line. The page had no CTA of its own.
 - `/contact` — beside "Email me".
 
-**Jan does:** create a free https://cal.com account, a 30-minute event (with
-Google Calendar connected so busy times block), and send the event link.
+**Set 2026-09-14:** `https://cal.com/jan-luigi-rivera-4zm6eu/30min` — the
+event page, not the profile Jan sent (which also lists a 15-minute event).
+Changing the Cal.com username later breaks this link; update it here too.
 
 **Verify.** Button appears in all three places once set; hidden while null.
 
