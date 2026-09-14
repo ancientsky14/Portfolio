@@ -190,8 +190,11 @@ and are **not** a map of the Philippines — see the header comment in
 ## Deployment — GitHub Pages (static export)
 
 `next.config.ts` sets `output: "export"`, `trailingSlash: true` and a
-`basePath` from `NEXT_PUBLIC_BASE_PATH` (`/Portfolio` in CI, empty locally).
-`.github/workflows/deploy.yml` builds and publishes on every push to `main`.
+`basePath` from `NEXT_PUBLIC_BASE_PATH` (`/portfolio` in CI, empty locally).
+`.github/workflows/deploy.yml` builds and publishes on every push to `portfolio`.
+The repo was renamed from `Portfolio` on 2026-09-14: Pages paths are
+case-sensitive, the old URL 404s rather than redirecting, and a rename means
+changing both env values in the workflow.
 
 What that rules out — do not add any of these: request-time Route Handlers,
 Server Actions, `resend`, cookies, redirects/rewrites/headers, ISR,

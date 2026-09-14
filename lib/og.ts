@@ -30,7 +30,7 @@ export function ogCardIds(): string[] {
   ];
 }
 
-/** The card's URL, relative to metadataBase (SITE.url, /Portfolio included). */
+/** The card's URL, relative to metadataBase (SITE.url, /portfolio included). */
 export function ogImageUrl(id: string): string {
   return `/og/${id}.png`;
 }

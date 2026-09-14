@@ -13,7 +13,7 @@ export const SITE = {
   /**
    * Absolute site URL, no trailing slash. Drives metadataBase, the sitemap
    * and robots.txt. The Pages workflow sets it to
-   * https://ancientsky14.github.io/Portfolio.
+   * https://ancientsky14.github.io/portfolio.
    */
   url: (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(
     /\/$/,

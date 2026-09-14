@@ -9,9 +9,10 @@ import type { NextConfig } from "next";
  *   · no next/image optimisation (`unoptimized`), so ship sized assets
  *   · no ISR, no middleware, no dynamic `generateMetadata` at request time
  *
- * The repo is `ancientsky14/Portfolio`, so Pages serves it from
- * https://ancientsky14.github.io/Portfolio/ and every asset needs the
- * `/Portfolio` prefix. Set `NEXT_PUBLIC_BASE_PATH=""` if the site ever moves
+ * The repo is `ancientsky14/portfolio`, so Pages serves it from
+ * https://ancientsky14.github.io/portfolio/ and every asset needs the
+ * `/portfolio` prefix — case-sensitive: it was `/Portfolio` until the repo
+ * was renamed (2026-09-14). Set `NEXT_PUBLIC_BASE_PATH=""` if the site ever moves
  * to a custom domain or to an `ancientsky14.github.io` repo, where it is
  * served from the root instead.
  */

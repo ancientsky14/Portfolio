@@ -3,9 +3,11 @@
 # One-time setup in the repo: Settings → Pages → Build and deployment →
 # Source: "GitHub Actions". Nothing else — no gh-pages branch, no token.
 #
-# The site is served from https://ancientsky14.github.io/Portfolio/, so the
-# build runs with NEXT_PUBLIC_BASE_PATH=/Portfolio. If the site moves to a
-# custom domain, set that variable to "" and add public/CNAME.
+# The site is served from https://ancientsky14.github.io/portfolio/, so the
+# build runs with NEXT_PUBLIC_BASE_PATH=/portfolio. The path follows the repo
+# name, case and all: renaming the repo means changing both values below. If
+# the site moves to a custom domain, set that variable to "" and add
+# public/CNAME.
 
 name: Deploy to GitHub Pages
 

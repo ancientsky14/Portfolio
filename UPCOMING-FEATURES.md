@@ -22,8 +22,9 @@ Build in phase order. Each phase is independently shippable.
 ## 0. Resume on a new PC
 
 **State as of 2026-09-13** (branch `portfolio`, deployed to
-https://ancientsky14.github.io/Portfolio/ by `.github/workflows/deploy.yml`
-on every push):
+https://ancientsky14.github.io/portfolio/ by `.github/workflows/deploy.yml`
+on every push; the repo was `Portfolio` until 2026-09-14 — Pages paths are
+case-sensitive and the old URL does not redirect):
 
 - Case studies have live links, build-time status, tour recordings and
   screenshots (`lib/live.ts`, `lib/shots.ts`, `components/work/`).
@@ -123,7 +124,7 @@ an unknown id is a 404, the pages carry the right og:image, and Next's own
 
 **Verify.** `npm run build`, then `out/og/` holds `site.png`, four `work-*.png`
 and three `lab-*.png`. After deploy: `curl -I
-https://ancientsky14.github.io/Portfolio/og/site.png` says `content-type:
+https://ancientsky14.github.io/portfolio/og/site.png` says `content-type:
 image/png`, and a case-study URL pasted into the Facebook Sharing Debugger
 shows its card.
 
