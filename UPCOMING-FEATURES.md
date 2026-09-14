@@ -469,3 +469,112 @@ From CLAUDE.md: LCP < 2.0 s on 4G mid-range Android · CLS < 0.05 · INP < 200 m
 · main JS < 200 KB gzip · Lighthouse ≥ 95 performance, 100 accessibility.
 Phase 2 (Turnstile script, Contact page only) and Phase 4 (palette) are the
 two that touch JS weight.
+
+---
+
+## R9 — Hardening baseline (2026-09-14)
+
+The first time the budgets were measured. Before 2026-09-14 no numbers
+existed; "the budgets are met" had never been checked.
+
+### Budgets: where they stand
+
+| Budget | Before | After | Status |
+|---|---|---|---|
+| First-load JS (gzip, modern browsers*) | 218–239 KB | **153–174 KB** | met |
+| three.js chunk (lazy) | 131 KB | 131 KB | met |
+| Accessibility (Lighthouse) | 94–97 | **100** on all 7 pages | met |
+| axe violations (every page × light/dark × desktop/phone × motion) | 3 rules, ~100 nodes | **0** | met |
+| CLS | 0–0.11 (`/about/`) | 0–0.046 | met |
+| LCP, real 4G + 4× CPU throttling | 2.2–2.6 s | 2.2–2.6 s | **open** (budget 2.0) |
+| Performance, real throttling | 68–77 | 72–79 | **open** (budget 95) |
+| TBT (the lab stand-in for INP) | 850–1605 ms | 860–1100 ms | **open** |
+
+\* Excludes the 38.6 KB polyfill chunk, loaded `noModule` — modern browsers
+never download it.
+
+Measured on local production builds of the same commit with and without
+the changes, served like Pages (gzip, `/portfolio` base path), so the only
+difference is the code. Lighthouse 13 mobile preset; two runs per page with
+real throttling, three simulated. The live site measured the same shape
+before the changes (Performance 63–93, LCP 2.8–4.1 s simulated).
+
+**Lighthouse's simulated LCP (3.1–4.5 s) is not the number to chase here.**
+Unthrottled, the LCP element paints with the first paint (~270 ms); the
+simulation counts the three web fonts and all early JS as dependencies of
+the text. Real throttling (`throttlingMethod: "devtools"`) gives 2.2–2.6 s,
+which is network time for HTML, CSS and fonts on slow 4G.
+
+Dead end, don't repeat: the boot intro is **not** the LCP cause. The same
+build served with the intro disabled measured the same LCP (3.8–4.6 s
+simulated). Removing it would cost Jan's design and gain nothing.
+
+### What was fixed
+
+- **`--text-3` #6d827a → #586d66** (light; Jan approved). Was 3.76:1 on the
+  ground; now ≥ 4.58:1 on every light background. Dark `--text-3` passes
+  (4.6–5.4:1) except on dark `--accent-soft` (4.05:1) — no such pairing
+  exists today; do not create one.
+- **Focus ring 45% → 80% accent** (Jan approved): 2.0:1 → 3.8–4.1:1.
+- `/services/`: "Scope. Build. Keep running." is an `h2` (the page jumped
+  h1 → h3); the method cards' faint numbers are CSS `::after` content, not
+  DOM text (axe checks aria-hidden text too); the update-flow diagram, which
+  scrolls sideways on phones, is focusable with a label.
+- **Motion loads after hydration** (`components/motion/page-motion-lazy.tsx`):
+  GSAP, its plugins and Lenis left first-load JS — the whole JS budget fix.
+- **Intro timers start at navigation**, in the boot script (`INTRO` in
+  `lib/motion.ts`), and the hero's delay counts down from there. On a slow
+  phone the page was hidden until hydration + 1.65 s.
+- **A failed lazy chunk no longer blanks the page.** Blocking the three.js
+  chunk replaced the whole page with Next's error screen (no title, no
+  `lang`, no `<main>`) — any dropped connection on mobile data could do it.
+  `components/site/optional.tsx` catches it; verified by blocking the
+  three.js and motion chunks on three pages.
+
+### Checked and passing
+
+- Keyboard, desktop and phone, every page: skip link first and lands in
+  `#main`; every stop has a visible ring; no hidden or zero-size stops except
+  the mode switch's native radios (the ring is on the label, 2 px accent) and
+  the Turnstile widget (third-party). Gallery viewer: opens on Enter, focus
+  inside, Tab stays inside, Esc closes, focus returns to the card.
+- Reduced motion: after scrolling every page to the bottom, nothing is left
+  invisible; the process spine is fully drawn.
+- 554 rendered text nodes axe could not decide (glass, gradients,
+  pseudo-elements) checked by sampling pixels: all pass AA.
+
+### Still open — performance (next, if Jan wants it)
+
+Main-thread work under 4× CPU is what holds Performance at 72–79:
+
+1. **Hydration.** `/work/` has an ~870 ms long task in React hydrating the
+   page. Smaller client components, or server-rendering more of the gallery,
+   would cut it.
+2. **Motion setup.** The motion chunk runs ~630 ms of script when it arrives
+   (SplitText, ScrollTrigger). Setting up only what is on screen, then the
+   rest on idle, would spread it out.
+3. **Fonts.** Three woff2 files, ~106 KB, sit between the HTML and the LCP
+   text on slow 4G.
+4. **Real device.** None of this has been measured on a real mid-range
+   Android on mobile data — the only number that counts. Steps: enable
+   Developer options → USB debugging on the phone, connect it, open
+   `chrome://inspect` on the PC, open the live site on the phone over mobile
+   data (Wi-Fi off), then DevTools → Performance → Live metrics for `/`,
+   `/work/mgb-ebudget/`, `/contact/`.
+
+### Re-running it
+
+The scripts lived in a session scratchpad; rebuild them from this
+description. In a folder outside the repo: `npm i lighthouse
+@axe-core/playwright playwright` (never in the project).
+
+- **Lighthouse:** node API, mobile preset, `throttlingMethod: "devtools"`
+  for real throttling; median of ≥ 2 runs; Chrome's temp-profile cleanup can
+  throw EPERM on Windows — catch it.
+- **JS weight:** gzip every `<script src>` in each page's HTML, minus the
+  `noModule` one.
+- **axe:** `@axe-core/playwright` with tags wcag2a/aa, wcag21a/aa, wcag22aa,
+  best-practice; seed `localStorage.theme` and `sessionStorage.booted`.
+- **Build to compare:** `next dev` and `next build` can run at once
+  (`.next/dev` is separate). Build with `NEXT_PUBLIC_BASE_PATH=/portfolio`
+  and serve `out/` under `/portfolio` with gzip.

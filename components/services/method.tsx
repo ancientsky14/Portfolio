@@ -17,10 +17,11 @@ export function Method() {
         <p className="font-mono text-2xs font-semibold uppercase tracking-widest text-accent">
           How I work
         </p>
-        <p className="mt-3 font-display text-2xl font-bold leading-tight tracking-tight text-text">
+        {/* h2: the phase titles below are h3, under the page's h1. */}
+        <h2 className="mt-3 font-display text-2xl font-bold leading-tight tracking-tight text-text">
           Scope. Build.
           <span className="block text-text-2">Keep running.</span>
-        </p>
+        </h2>
         <p className="mt-3 text-sm text-text-2">
           Three phases, in order. The four steps behind them are further down.
         </p>
@@ -42,12 +43,13 @@ export function Method() {
                 data-tilt-card
                 className="relative flex h-full flex-col overflow-hidden rounded-md border border-line bg-surface-2 p-5 sm:p-6"
               >
+                {/* The faint number is decoration, drawn by CSS: as DOM text
+                    it failed the contrast check even with aria-hidden. */}
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute right-4 top-2 select-none font-display text-4xl font-extrabold leading-none text-line"
-                >
-                  {m.n}
-                </span>
+                  data-n={m.n}
+                  className="pointer-events-none absolute right-4 top-2 select-none font-display text-4xl font-extrabold leading-none text-line after:content-[attr(data-n)]"
+                />
                 <span
                   data-tilt-icon
                   className="grid size-11 place-items-center rounded-md bg-accent-soft text-accent"

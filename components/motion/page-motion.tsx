@@ -10,7 +10,7 @@ import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import Lenis from "lenis";
 import { A11Y_EVENT, prefersReduced } from "@/lib/a11y";
 import { DESKTOP_QUERY, panelScroller } from "@/lib/scroller";
-import { BG_EVENT, D, E, STAGGER, type AttractDetail } from "@/lib/motion";
+import { BG_EVENT, D, E, INTRO, STAGGER, type AttractDetail } from "@/lib/motion";
 
 /**
  * The whole motion layer, in one client component mounted once in the shell.
@@ -155,10 +155,12 @@ export function PageMotion() {
             duration: D.base,
             ease: E,
             stagger: STAGGER.loose,
-            // Wait out the boot intro (components/motion/boot-intro.tsx)
-            // when it is playing, so the lines rise as the overlay fades.
+            // Wait out what is left of the boot intro (INTRO in lib/motion.ts,
+            // timed from navigation start), so the lines rise as the overlay
+            // fades — not a fixed 1.2s from hydration, which on a slow phone
+            // hid the headline long after the intro had ended.
             delay: document.documentElement.classList.contains("is-intro")
-              ? 1.2
+              ? Math.max(0, INTRO.out - performance.now()) / 1000
               : 0,
           });
         }

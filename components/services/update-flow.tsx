@@ -114,7 +114,14 @@ export function UpdateFlow() {
           </figcaption>
         </div>
 
-        <div className="overflow-x-auto bg-surface-2">
+        {/* Scrolls sideways on phones, so it takes focus: arrow keys scroll
+            it for a keyboard user. */}
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label="Update flow diagram, scrolls sideways"
+          className="overflow-x-auto bg-surface-2"
+        >
           <div
             data-flow
             className="relative mx-auto min-w-180"

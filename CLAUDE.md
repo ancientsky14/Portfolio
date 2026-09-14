@@ -94,7 +94,7 @@ and palette. Read `PLAN-V2.md` before changing layout or tokens.
 | R6 | Pages export, socials + icons, MDX bodies, brief form, re-tokenized registry pieces | **done** |
 | R7 | Repositioning — product developer, eBudget added, drafts corrected | **done** |
 | R8 | Reference shell + components — panel scroll, work viewer, tab bar, intro | **done** |
-| R9 | Hardening — budgets on real Android, keyboard + contrast pass (OG image done in `UPCOMING-FEATURES.md` Phase 1) | ← next |
+| R9 | Hardening — budgets, keyboard + contrast pass (OG image done in `UPCOMING-FEATURES.md` Phase 1) | **partial** 2026-09-14: a11y 100, JS/CLS met; LCP 2.2–2.6s, Performance 72–79, real Android unmeasured — `UPCOMING-FEATURES.md` "R9" |
 
 ### The shell
 
@@ -114,7 +114,10 @@ and palette. Read `PLAN-V2.md` before changing layout or tokens.
   its card → modal viewer, the mobile tab bar, and the first-visit boot
   intro (`html.is-intro`, set by the boot script). The intro overrides the
   "motion never delays the message" rule by Jan's decision — keep it gated
-  (session-once, reduced motion off) rather than widening it. A cursor ring
+  (session-once, reduced motion off) rather than widening it. Its timers
+  (`INTRO` in `lib/motion.ts`) run in the inline boot script, from
+  navigation start — never from hydration, which on a slow phone kept the
+  page hidden up to 3s (R9). A cursor ring
   was built and then removed at Jan's request (2026-09-11); do not re-add.
 - The rail portrait (2026-09-11) is a transparent cutout, `public/avatar.webp`
   (512², metadata stripped), with layered depth after the reference — glow,
@@ -133,7 +136,11 @@ and palette. Read `PLAN-V2.md` before changing layout or tokens.
 
 ### Motion
 
-All of it is in `components/motion/page-motion.tsx`, mounted once. Pages stay
+All of it is in `components/motion/page-motion.tsx`, mounted once — through
+`page-motion-lazy.tsx` (`next/dynamic`, `ssr: false`), so GSAP, its plugins
+and Lenis (~70KB gzip) load after hydration, not in first-load JS (R9: that
+took first-load JS from ~218 to ~153KB). Keep it that way: never import
+`gsap` or `lenis` from a component in the first-load bundle. Pages stay
 Server Components and opt in with attributes:
 
 - `data-reveal` — rises and fades on entry

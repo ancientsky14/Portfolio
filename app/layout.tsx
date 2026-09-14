@@ -7,9 +7,10 @@ import {
 import { Rail } from "@/components/shell/rail";
 import { MobileBar } from "@/components/shell/mobile-bar";
 import { PanelFooter } from "@/components/shell/panel-footer";
-import { PageMotion } from "@/components/motion/page-motion";
+import { PageMotionLazy } from "@/components/motion/page-motion-lazy";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { SITE } from "@/lib/site";
+import { INTRO } from "@/lib/motion";
 import { avatarSrc } from "@/lib/avatar";
 import { openGraphFor } from "@/lib/og";
 import { personLd } from "@/lib/structured-data";
@@ -18,6 +19,7 @@ import { A11yPanel } from "@/components/shell/a11y-panel";
 import { TabBar } from "@/components/shell/tab-bar";
 import { BootIntro } from "@/components/motion/boot-intro";
 import { Archipelago } from "@/components/hero/archipelago";
+import { Optional } from "@/components/site/optional";
 import "./globals.css";
 
 /* The three faces from the design direction. The CSS variable names here
@@ -78,7 +80,8 @@ try{
   if(!reduce && !sessionStorage.getItem('booted')){
     sessionStorage.setItem('booted','1');
     d.classList.add('is-intro');
-    setTimeout(function(){ d.classList.remove('is-intro','is-intro-out'); }, 3000);
+    setTimeout(function(){ d.classList.add('is-intro-out'); }, ${INTRO.out});
+    setTimeout(function(){ d.classList.remove('is-intro','is-intro-out'); }, ${INTRO.done});
   }
 }catch(e){}
 `;
@@ -104,7 +107,10 @@ export default function RootLayout({
           Skip to content
         </a>
 
-        <PageMotion />
+        {/* Optional: a chunk that fails to load must not take the page down. */}
+        <Optional>
+          <PageMotionLazy />
+        </Optional>
         <ScrollProgress />
         <A11yPanel />
         <BootIntro />
@@ -119,7 +125,9 @@ export default function RootLayout({
           aria-hidden="true"
           className="pointer-events-none fixed inset-0 -z-10"
         >
-          <Archipelago />
+          <Optional>
+            <Archipelago />
+          </Optional>
         </div>
 
         {/* The shell, after the reference: on desktop the page itself never

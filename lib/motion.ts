@@ -52,3 +52,14 @@ export const BG_EVENT = {
 } as const;
 
 export type AttractDetail = { x: number; y: number } | null;
+
+/**
+ * Boot intro timing, in ms from navigation start (components/motion/boot-intro.tsx).
+ * The inline boot script in app/layout.tsx runs both timers, so the content
+ * is revealed at INTRO.done on any device. They used to start at hydration,
+ * which on a throttled phone kept the page hidden up to 3s (R9, 2026-09-14).
+ */
+export const INTRO = {
+  out: 1150, // overlay starts fading
+  done: 1650, // classes removed, site fully revealed
+} as const;

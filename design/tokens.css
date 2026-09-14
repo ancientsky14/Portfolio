@@ -100,7 +100,11 @@ body {
   /* text */
   --text: #0f1f1a;
   --text-2: #3d524b;
-  --text-3: #6d827a;
+  /* #586d66, not #6d827a (R9, 2026-09-14): the old value was 3.76:1 on
+     --ground, under WCAG AA's 4.5:1. This is ≥4.58:1 on every light
+     background, the darkest (accent-soft, surface-2) included. The share
+     cards copy it: app/_og/cards.tsx. */
+  --text-3: #586d66;
 
   /* lines */
   --line: #d5e0da;
@@ -253,7 +257,9 @@ body {
   /* the only box-shadow in the codebase */
   :focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 45%, transparent);
+    /* 80%, not 45% (R9, 2026-09-14): at 45% the ring was 2:1 against the
+       ground, under the 3:1 a focus indicator needs. */
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 80%, transparent);
     border-radius: var(--radius-sm);
   }
 

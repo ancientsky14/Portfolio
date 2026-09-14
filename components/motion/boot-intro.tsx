@@ -1,6 +1,3 @@
-"use client";
-
-import { useEffect } from "react";
 import { SITE } from "@/lib/site";
 
 /**
@@ -17,34 +14,17 @@ import { SITE } from "@/lib/site";
  *   · ~1.6s end to end; the overlay is `pointer-events: none`, so nothing
  *     underneath is blocked
  *   · never under reduced motion — the OS setting or the site's own panel
- *   · the decision and a 3s failsafe live in the boot script in
- *     app/layout.tsx, which runs before paint: no flash of the site before
- *     the overlay, and no way for a failed bundle to leave it stuck
+ *   · the decision and both timers (INTRO in lib/motion.ts) live in the boot
+ *     script in app/layout.tsx, which runs before paint: no flash of the site
+ *     before the overlay, and the reveal never waits for the JS bundle. Until
+ *     2026-09-14 the timers ran here, from hydration, which on a throttled
+ *     phone kept the page hidden up to 3s (R9, Lighthouse LCP).
  *
  * The overlay markup is server-rendered and hidden by CSS unless
  * `html.is-intro` is set, so it is already on screen at first paint. All
- * styling lives in design/tokens.css under "Boot intro".
+ * styling lives in design/tokens.css under "Boot intro". No client code.
  */
-
-const OUT_AT = 1150; // overlay starts fading
-const DONE_AT = 1650; // classes removed, site fully revealed
-
 export function BootIntro() {
-  useEffect(() => {
-    const html = document.documentElement;
-    if (!html.classList.contains("is-intro")) return;
-
-    const out = window.setTimeout(() => html.classList.add("is-intro-out"), OUT_AT);
-    const done = window.setTimeout(
-      () => html.classList.remove("is-intro", "is-intro-out"),
-      DONE_AT,
-    );
-    return () => {
-      window.clearTimeout(out);
-      window.clearTimeout(done);
-    };
-  }, []);
-
   const words = SITE.name.split(" ");
 
   return (

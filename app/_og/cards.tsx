@@ -29,7 +29,7 @@ const C = {
   surface2: "#e9efeb",
   text: "#0f1f1a",
   text2: "#3d524b",
-  text3: "#6d827a",
+  text3: "#586d66",
   line: "#d5e0da",
   line2: "#b7c7bf",
   accent: "#0b6e5c",
