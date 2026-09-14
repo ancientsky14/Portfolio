@@ -11,7 +11,7 @@ Build in phase order. Each phase is independently shippable.
 
 | Phase | Feature | Needs from Jan |
 |---|---|---|
-| 1 | Share preview images, search-engine data, CV button, Book-a-call — **built 2026-09-14**, booking link set | CV web copy |
+| 1 | Share preview images, search-engine data, CV button, Book-a-call — **built 2026-09-14**, booking link set, CV published | LinkedIn/GitHub hyperlinks in the CV |
 | 2 | Contact form that really sends (Gmail SMTP) — **live 2026-09-14** | Gmail App Password, Turnstile keys |
 | 3 | Testimonials | Real quotes + written permission |
 | 4 | Ctrl+K search | — |
@@ -178,6 +178,20 @@ exported with Word *Save As → PDF* with *Document properties* unticked. No
 exiftool or qpdf on the office PC: Claude rewrites the file with pdf-lib,
 removing `/Info` and `/Metadata` and the objects they point to, as a full save.
 The About button downloads it as `Jan-Luigi-Rivera-CV.pdf`.
+
+**Published 2026-09-14.** `public/cv.pdf` is the pdf-lib rewrite of Jan's
+Word export (kept locally in gitignored `tmp-shots/CV_Resume.pdf`).
+Verified:
+
+- no `/Info` keys, no XMP, no Word `PieceInfo`, one `startxref`;
+- no EXIF in the photo;
+- no phone and no barangay in the text;
+- tagging and `Lang` kept, and it renders the same;
+- served as `application/pdf`, and `/about` shows the button.
+
+Open item: in the Word file, "LinkedIn" and "GitHub" are styled like links
+but only the email is a real hyperlink. Add the hyperlinks in Word, export
+again, and re-run the clean.
 
 **Verify.** `/about` shows the button; the download opens the PDF.
 

@@ -315,8 +315,9 @@ Still open:
 1. Why the Vercel → Cloudflare Workers move, with numbers if available?
 2. `public/cv.pdf` — a **web copy**: no street address or phone, no
    unmeasured percentages, metadata stripped (Jan, 2026-09-14; see
-   UPCOMING-FEATURES.md 1.3). Never publish the full CV. The booking link is
-   set (2026-09-14).
+   UPCOMING-FEATURES.md 1.3). **Published 2026-09-14.** Never publish the
+   full CV; a new export goes through the same metadata clean. The booking
+   link is set (2026-09-14).
 3. Any testimonial at all — if none, keep the section cut rather than fake it.
 4. Case-study bodies: `bodyReviewed: true` only once Jan has read each draft.
 

@@ -57,12 +57,6 @@ export function PanelFooter() {
           <p className="mt-2 font-mono text-2xs uppercase tracking-widest text-text-3">
             {SITE.credit}
           </p>
-          {/* Only once the counter is live (lib/site.ts, visitsApi). */}
-          {SITE.visitsApi ? (
-            <p className="mt-2 font-mono text-2xs uppercase tracking-widest text-text-3">
-              Visits counted without cookies · no IPs stored
-            </p>
-          ) : null}
         </nav>
       </div>
     </footer>
