@@ -94,7 +94,7 @@ and palette. Read `PLAN-V2.md` before changing layout or tokens.
 | R6 | Pages export, socials + icons, MDX bodies, brief form, re-tokenized registry pieces | **done** |
 | R7 | Repositioning — product developer, eBudget added, drafts corrected | **done** |
 | R8 | Reference shell + components — panel scroll, work viewer, tab bar, intro | **done** |
-| R9 | Hardening — OG image, budgets on real Android, keyboard + contrast pass | ← next |
+| R9 | Hardening — budgets on real Android, keyboard + contrast pass (OG image done in `UPCOMING-FEATURES.md` Phase 1) | ← next |
 
 ### The shell
 
@@ -193,13 +193,37 @@ and are **not** a map of the Philippines — see the header comment in
 `basePath` from `NEXT_PUBLIC_BASE_PATH` (`/Portfolio` in CI, empty locally).
 `.github/workflows/deploy.yml` builds and publishes on every push to `main`.
 
-What that rules out — do not add any of these: Route Handlers, Server
-Actions, `resend`, cookies, redirects/rewrites/headers, ISR, `next/image`
-optimisation, dynamic routes without `generateStaticParams`. Metadata routes
-(`sitemap.ts`, `robots.ts`) need `export const dynamic = "force-static"`.
+What that rules out — do not add any of these: request-time Route Handlers,
+Server Actions, `resend`, cookies, redirects/rewrites/headers, ISR,
+`next/image` optimisation, dynamic routes without `generateStaticParams`.
+Metadata routes (`sitemap.ts`, `robots.ts`) need `export const dynamic =
+"force-static"`.
+
+The one allowed Route Handler kind is a `force-static` GET that the export
+turns into a file — `app/og/[card]/route.tsx`, amended with Jan on 2026-09-14.
+Nothing runs when a visitor requests it.
 
 The contact form (`components/contact/brief-form.tsx`) composes an email in
 the visitor's own mail client — it posts nowhere.
+
+### Share cards, search-engine data, booking (2026-09-14)
+
+- **Share cards** are `app/og/[card]/route.tsx` → `out/og/site.png`,
+  `work-<slug>.png`, `lab-<slug>.png`; layouts and fonts in `app/_og/`, ids
+  and `openGraphFor()` in `lib/og.ts`. **Not** the `opengraph-image.tsx`
+  convention: its export is an extensionless file, which Pages serves as
+  `application/octet-stream` and Facebook rejects, and under `[slug]` it
+  cannot get its params. The card colours are hard-coded light tokens — change
+  a token, change `app/_og/cards.tsx`.
+- **JSON-LD** builders are in `lib/structured-data.ts`, rendered by
+  `components/site/json-ld.tsx`: `Person` in the layout, `CreativeWork` per
+  case study, `TechArticle` per lab note. Case studies are deliberately not
+  `SoftwareApplication` — Google requires a price and a rating for it, and
+  the site states neither.
+- **Book a 30-min call** (`components/site/book-call.tsx`) renders only when
+  `SITE.bookingUrl` is an https link. In the fitted home hero it sits on its
+  own row (`.home-fit__actions`) — three buttons in one row broke the
+  headline onto four lines.
 
 ### Case-study bodies — a second truthfulness gate
 
@@ -268,7 +292,8 @@ scope, staging link, training, updates after launch), the home card is
 
 Still open:
 1. Why the Vercel → Cloudflare Workers move, with numbers if available?
-2. `public/avatar.jpg` and `public/cv.pdf`.
+2. `public/cv.pdf` (metadata stripped) — the avatar is in, as `public/avatar.webp`.
+   And the Cal.com event link for `SITE.bookingUrl`.
 3. Any testimonial at all — if none, keep the section cut rather than fake it.
 4. Case-study bodies: `bodyReviewed: true` only once Jan has read each draft.
 

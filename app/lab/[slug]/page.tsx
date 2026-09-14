@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import { getAllLab, getLab, getLabSlugs } from "@/lib/lab";
 import { prepareBody, bodyVisibility } from "@/lib/mdx";
+import { openGraphFor } from "@/lib/og";
+import { labNoteLd } from "@/lib/structured-data";
+import { JsonLd } from "@/components/site/json-ld";
 import { mdxComponents } from "@/components/mdx/mdx-components";
 import { ToolIcon } from "@/components/icons/tool-icon";
 
@@ -38,7 +41,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const e = getLab(slug);
   if (!e) return {};
-  return { title: `${e.title} — Lab`, description: e.blurb };
+  return {
+    title: `${e.title} — Lab`,
+    description: e.blurb,
+    openGraph: openGraphFor(`lab-${e.slug}`, `${e.kind}: ${e.title}`),
+  };
 }
 
 export default async function LabNote({
@@ -58,6 +65,7 @@ export default async function LabNote({
 
   return (
     <article>
+      <JsonLd data={labNoteLd(e)} />
       <header className="border-b border-line px-5 py-14 sm:px-8 sm:py-20 lg:px-12">
         <Link
           href="/lab"

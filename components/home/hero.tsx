@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Mail } from "lucide-react";
 import { SITE } from "@/lib/site";
+import { BookCall } from "@/components/site/book-call";
 
 /**
  * Home hero — laid out after the reference: one very large headline, the
@@ -11,7 +12,9 @@ import { SITE } from "@/lib/site";
  * underneath comes from SITE.line / SITE.sub.
  *
  * Two CTAs because the site has two audiences: clients ("Get in touch")
- * and employers ("Hire me", which lands on the #hire block on /about).
+ * and employers ("Hire me", which lands on the #hire block on /about). A
+ * third, "Book a 30-min call", appears under them once SITE.bookingUrl is
+ * set.
  *
  * Behind it: the poster wash (in the HTML, the default). The Archipelago point
  * cloud is the site-wide background now, mounted in app/layout.tsx. Each
@@ -48,7 +51,9 @@ export function Hero() {
           ))}
         </h1>
 
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+        {/* `.home-fit__actions` (design/tokens.css) puts a third button on
+            its own row from 1100px, so the headline keeps its width. */}
+        <div className="home-fit__actions flex shrink-0 flex-wrap items-center gap-2">
           <Link
             href="/contact"
             data-magnetic
@@ -69,6 +74,7 @@ export function Hero() {
           >
             Hire me
           </Link>
+          <BookCall className="bg-surface/70 backdrop-blur-sm" />
         </div>
       </div>
 

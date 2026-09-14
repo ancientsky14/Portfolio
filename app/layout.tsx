@@ -11,6 +11,9 @@ import { PageMotion } from "@/components/motion/page-motion";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { SITE } from "@/lib/site";
 import { avatarSrc } from "@/lib/avatar";
+import { openGraphFor } from "@/lib/og";
+import { personLd } from "@/lib/structured-data";
+import { JsonLd } from "@/components/site/json-ld";
 import { A11yPanel } from "@/components/shell/a11y-panel";
 import { TabBar } from "@/components/shell/tab-bar";
 import { BootIntro } from "@/components/motion/boot-intro";
@@ -45,11 +48,9 @@ export const metadata: Metadata = {
     template: "%s · Jan Luigi Rivera",
   },
   description: `${SITE.line} ${SITE.sub}`,
-  openGraph: {
-    type: "website",
-    locale: "en_PH",
-    siteName: "Jan Luigi Rivera",
-  },
+  // The site card (app/og), inherited by every page without its own.
+  openGraph: openGraphFor("site", `${SITE.name} — ${SITE.line}`),
+  twitter: { card: "summary_large_image" },
 };
 
 /**
@@ -85,10 +86,13 @@ try{
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const avatar = avatarSrc();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+        <JsonLd data={personLd(avatar)} />
       </head>
       <body
         className={`${display.variable} ${sans.variable} ${mono.variable} min-h-dvh bg-ground text-text antialiased`}
@@ -129,7 +133,7 @@ export default function RootLayout({
             Lenis needs a wrapper (the panel) and one content element. */}
         <div className="flex min-h-dvh flex-col lg:h-dvh lg:min-h-0 lg:flex-row lg:overflow-hidden">
           <MobileBar />
-          <Rail avatarSrc={avatarSrc()} />
+          <Rail avatarSrc={avatar} />
 
           <div
             id="panel"

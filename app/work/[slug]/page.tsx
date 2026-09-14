@@ -24,6 +24,9 @@ import {
 import { prepareBody, bodyVisibility } from "@/lib/mdx";
 import { liveLinks, checkLive, hostOf, type LiveKind } from "@/lib/live";
 import { mediaFor } from "@/lib/shots";
+import { openGraphFor } from "@/lib/og";
+import { caseStudyLd } from "@/lib/structured-data";
+import { JsonLd } from "@/components/site/json-ld";
 import { mdxComponents } from "@/components/mdx/mdx-components";
 import { ToolIcon } from "@/components/icons/tool-icon";
 import { WorkBadges } from "@/components/work/badges";
@@ -57,9 +60,14 @@ export async function generateMetadata({
   const { slug } = await params;
   const w = getWork(slug);
   if (!w) return {};
+  const title = w.fullName ? `${w.title} — ${w.fullName}` : w.title;
   return {
-    title: w.fullName ? `${w.title} — ${w.fullName}` : w.title,
+    title,
     description: w.summary,
+    openGraph: openGraphFor(
+      `work-${w.slug}`,
+      w.subtitle ? `${title}: ${w.subtitle}` : title,
+    ),
   };
 }
 
@@ -90,6 +98,7 @@ export default async function CaseStudy({
 
   return (
     <article>
+      <JsonLd data={caseStudyLd(w)} />
       <header className="border-b border-line px-5 py-14 sm:px-8 sm:py-20 lg:px-12">
         <Link
           href="/work"

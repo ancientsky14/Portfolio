@@ -57,6 +57,27 @@ export function mediaFor(slug: string): Media {
   };
 }
 
+/**
+ * The file on disk behind a case study's preview — the recording's poster,
+ * else the first screenshot. For the share card (app/og), which embeds the
+ * bytes, so it needs a path rather than a URL. Same folder and ordering as
+ * mediaFor(), and the same rule: only files Jan has reviewed are in it.
+ * PNG and JPEG only — the two formats the card renderer is known to embed.
+ */
+export function posterFile(slug: string): string | null {
+  const dir = path.join(process.cwd(), "public", "work", slug);
+  if (!fs.existsSync(dir)) return null;
+  const files = fs.readdirSync(dir).sort();
+  const stem = (f: string) => f.replace(/\.[^.]+$/, "");
+  const embeddable = (f: string) => /\.(png|jpe?g)$/i.test(f);
+  const video = files.find((f) => VIDEO.test(f) && !/\.full\.[^.]+$/i.test(f));
+  const poster = video
+    ? files.find((f) => embeddable(f) && stem(f) === stem(video))
+    : undefined;
+  const file = poster ?? files.find(embeddable);
+  return file ? path.join(dir, file) : null;
+}
+
 export function shotsFor(slug: string): string[] {
   const dir = path.join(process.cwd(), "public", "work", slug);
   if (!fs.existsSync(dir)) return [];

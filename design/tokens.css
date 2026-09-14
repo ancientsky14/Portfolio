@@ -708,6 +708,20 @@ html.is-intro [data-intro="tabbar"] {
     justify-content: space-between;
     gap: clamp(20px, 4vw, 56px);
   }
+  /* The hero's buttons: two side by side, and a third — "Book a 30-min
+     call", once SITE.bookingUrl is set — on a row of its own under them,
+     right-aligned. Three in one row took the width from the headline and
+     broke it onto four lines at 1100 and 1280px. With two buttons this is
+     the same single row as before. */
+  .home-fit__actions {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 8px;
+  }
+  .home-fit__actions > :nth-child(3) {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
 
   .home-fit__show {
     min-height: 0;

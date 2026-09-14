@@ -58,4 +58,13 @@ export const SITE = {
    * switch counting and the count off; the rail then shows just the handle.
    */
   visitsApi: "https://portfolio-visits.ancientsky14.workers.dev" as string | null,
+
+  /**
+   * NEEDS: Jan's Cal.com event link for a 30-minute call (a free cal.com
+   * account, the event connected to Google Calendar so busy times block).
+   * Drives the "Book a 30-min call" button in the home hero, on /services
+   * and on /contact (components/site/book-call.tsx). While null, no button
+   * renders anywhere — never a link to a page that is not set up.
+   */
+  bookingUrl: null as string | null,
 } as const;

@@ -5,6 +5,7 @@ import { ServiceCards } from "@/components/services/service-cards";
 import { UpdateFlow } from "@/components/services/update-flow";
 import { ProofStrip } from "@/components/sections/proof-strip";
 import { Engagement } from "@/components/sections/engagement";
+import { BookCall } from "@/components/site/book-call";
 
 export const metadata: Metadata = {
   title: "Services",
@@ -40,6 +41,8 @@ export default function Services() {
           <p className="mt-3 text-text-2">
             What I build, how it runs, and what you get.
           </p>
+          {/* Renders only once SITE.bookingUrl is set. */}
+          <BookCall className="mt-6" />
 
           <div className="frame mt-8 p-3 sm:p-5">
             <Method />

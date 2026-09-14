@@ -5,6 +5,7 @@ import { SOCIALS } from "@/lib/socials";
 import { BrandIcon } from "@/components/icons/brand";
 import { BriefForm } from "@/components/contact/brief-form";
 import { DotPattern } from "@/components/ui/dot-pattern";
+import { BookCall } from "@/components/site/book-call";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -18,7 +19,8 @@ export const metadata: Metadata = {
  * locked-down desktop with scripts blocked), the brief form (which composes
  * an email in the visitor's own client, because Pages has no server, and
  * switches between a project brief and a job opportunity), and the four
- * profiles.
+ * profiles. A fourth, "Book a 30-min call", appears beside the email button
+ * once SITE.bookingUrl is set.
  */
 
 export default function Contact() {
@@ -49,6 +51,7 @@ export default function Contact() {
             <Mail size={16} strokeWidth={2} aria-hidden="true" />
             Email me
           </a>
+          <BookCall className="py-2.5" />
           <a
             href={`mailto:${SITE.email}`}
             className="font-display text-xl font-semibold tracking-tight text-text transition-colors hover:text-accent"

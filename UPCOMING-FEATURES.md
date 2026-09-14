@@ -4,14 +4,14 @@ A self-contained build plan, written 2026-09-13 so the work can continue on
 another PC (and in a fresh Claude Code session that has none of the earlier
 conversation). Read [CLAUDE.md](CLAUDE.md) first — its rules apply to every
 phase below: design tokens only, a reduced-motion end state for every
-animation, no invented numbers or quotes, static export (no Route Handlers,
-no Server Actions, no middleware).
+animation, no invented numbers or quotes, static export (no request-time
+Route Handlers, no Server Actions, no middleware).
 
 Build in phase order. Each phase is independently shippable.
 
 | Phase | Feature | Needs from Jan |
 |---|---|---|
-| 1 | Share preview images, search-engine data, CV button, Book-a-call | CV PDF, Cal.com link |
+| 1 | Share preview images, search-engine data, CV button, Book-a-call — **built 2026-09-14** | CV PDF, Cal.com link |
 | 2 | Contact form that really sends (Gmail SMTP) | Gmail App Password, Turnstile keys |
 | 3 | Testimonials | Real quotes + written permission |
 | 4 | Ctrl+K search | — |
@@ -52,10 +52,18 @@ npm run dev
   HIT_ORIGINS=https://ancientsky14.github.io,http://localhost:3000
   ```
 
-**Known gotcha:** if `npm run build` fails with
-`.next/dev/types/validator.ts(...): error TS1128`, a dev server left a
-half-written generated file. Stop `npm run dev`, run `rm -rf .next/dev`, build
-again. It is not a source error and does not affect CI.
+**Known gotchas:**
+
+- If `npm run build` fails with
+  `.next/dev/types/validator.ts(...): error TS1128`, a dev server left a
+  half-written generated file. Stop `npm run dev`, run `rm -rf .next/dev`,
+  build again. It is not a source error and does not affect CI.
+- Never run `npm ci` while `npm run dev` is running (Windows). `npm ci`
+  deletes `node_modules` first, then stops with `EPERM: operation not
+  permitted, unlink ...\next-swc.win32-x64-msvc.node` because the dev server
+  holds that file — leaving most packages gone. Stop the dev server first. If
+  it has already happened, `npm install` restores the tree in place without
+  touching the lockfile (seen 2026-09-14).
 
 **Commands Jan runs himself** (see his global instructions): `npm run build`,
 `git commit`, `git push`, any database push (`wrangler d1 migrations apply
@@ -77,57 +85,65 @@ change and hands over exact commands.
 shows a blank card. Buyers share links internally; the card is the first
 impression.
 
-**How.** Next 16 `opengraph-image` file convention. Confirmed in
-`node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/01-metadata/opengraph-image.md`:
-generated images are **built at build time and cached** unless they use
-request-time APIs — so they work with the static export.
+**Built** — but not with the `opengraph-image.tsx` convention this section
+first planned. Reading Next 16.3's export code showed two problems with it:
 
-Files:
+- A generated `opengraph-image` exports as an **extensionless** file
+  (`out/opengraph-image`, see `node_modules/next/dist/export/index.js`,
+  `handlerDest`). GitHub Pages serves that as `application/octet-stream`, and
+  Facebook's crawler rejects an og:image with that content type.
+- Under `app/work/[slug]/`, the image route's static params come only from
+  its own file, and the loader's generated `generateStaticParams` fills just
+  `__metadata_id__` — `slug` would be missing in the export.
 
-- `app/opengraph-image.tsx` — site card: name, `SITE.line`, accent wash.
-- `app/work/[slug]/opengraph-image.tsx` — per case study: `title`,
-  `fullName`, platform/status, and the poster `public/work/<slug>/00-tour.jpg`
-  embedded as a data URL (read with `readFile`). Reuses the existing
-  `generateStaticParams` from `app/work/[slug]/page.tsx`.
-- `app/lab/[slug]/opengraph-image.tsx` — per lab note: kind, title, blurb.
-- `app/_og/` — shared layout helper and font files. `next/og` needs
-  **TTF/OTF/WOFF (not WOFF2)**; ship the display and body faces the site uses
-  (see the font setup in `app/layout.tsx`) as `.ttf` in `app/_og/fonts/`.
-- Each file exports `alt`, `size = { width: 1200, height: 630 }`,
-  `contentType = "image/png"`.
+What shipped instead (Jan chose it, 2026-09-14):
 
-Rules: colours from the token values in `design/tokens.css` (hard-code the
-hex values in the OG file — CSS variables do not exist in `ImageResponse`);
-one accent; no invented figures on the card.
+- `app/og/[card]/route.tsx` — a `force-static` GET with `dynamicParams =
+  false`. `generateStaticParams` returns `site.png`, `work-<slug>.png`,
+  `lab-<slug>.png`; the `.png` in the param becomes the file's extension.
+  Static export supports this officially; nothing runs at request time.
+  CLAUDE.md's "no Route Handlers" line now reads "no request-time Route
+  Handlers".
+- `app/_og/cards.tsx` — the three layouts (site: role, name, `SITE.line`,
+  availability; case study: title, `fullName`, subtitle, platform/status/
+  version pills, the tour poster; lab: kind · year, title, blurb). Light-token
+  hex values, one accent, no figures.
+- `app/_og/fonts/` — Bricolage Grotesque 800 (opsz 96), Public Sans 400/600,
+  JetBrains Mono 600 as static TTF, with their OFL licences.
+- `lib/og.ts` — card ids and `openGraphFor(id, alt)`; `lib/shots.ts` —
+  `posterFile(slug)`. The layout sets the site card; case-study and lab pages
+  set their own. Next fills og:title/description and the twitter tags from
+  each page's own title and description.
 
-Check `metadataBase` is set from `SITE.url` in `app/layout.tsx` so image URLs
-include `/Portfolio`.
+Checked in `next dev` on 2026-09-14: all seven cards render (largest 340 KB),
+an unknown id is a 404, the pages carry the right og:image, and Next's own
+`resolveUrl` turns `/og/site.png` into
+`https://ancientsky14.github.io/Portfolio/og/site.png` with the CI
+`metadataBase`.
 
-**Verify.** `npm run build` then check `out/opengraph-image.png` and
-`out/work/<slug>/opengraph-image.png` exist and look right. After deploy,
-paste a case-study URL into https://www.opengraph.xyz/ or the Facebook Sharing
-Debugger.
+**Verify.** `npm run build`, then `out/og/` holds `site.png`, four `work-*.png`
+and three `lab-*.png`. After deploy: `curl -I
+https://ancientsky14.github.io/Portfolio/og/site.png` says `content-type:
+image/png`, and a case-study URL pasted into the Facebook Sharing Debugger
+shows its card.
 
 ### 1.2 Search-engine data (JSON-LD)
 
 **Why.** Helps Google show Jan's name, profiles and projects correctly.
 Invisible on the page.
 
-**How.** Inline `<script type="application/ld+json">` rendered by Server
-Components:
+**Built.** Builders in `lib/structured-data.ts`, rendered by
+`components/site/json-ld.tsx` (escapes `<`):
 
-- `app/layout.tsx` — `Person`: `name` (`SITE.name`), `url` (`SITE.url`),
-  `email`, `jobTitle` (`SITE.role`), `sameAs` from `lib/socials.ts`,
-  `image` (the avatar), `address` country `PH`.
-- `app/work/[slug]/page.tsx` — `SoftwareApplication` (or `CreativeWork` for
-  the platform): `name` = `title`, `alternateName` = `fullName`,
-  `applicationCategory`, `operatingSystem` (Windows for eBudget, Web
-  otherwise), `author` → the Person, `url` = the cleared live link from
-  `liveLinks()` only.
+- `app/layout.tsx` — `Person`: name, url, email, jobTitle (`SITE.role`),
+  `sameAs` from `lib/socials.ts`, the avatar, `addressCountry: PH`.
+- `app/work/[slug]/page.tsx` — **`CreativeWork`, not `SoftwareApplication`.**
+  Google's Software App result *requires* `offers.price` and a rating or
+  review; without them the Rich Results Test marks the item invalid, and the
+  site states neither. Carries name, alternateName, headline (subtitle),
+  description (summary), author, `dateCreated` (year), keywords (stack), and
+  `about` with the cleared live link from `liveLinks()` when there is one.
 - `app/lab/[slug]/page.tsx` — `TechArticle`.
-
-Put the builders in `lib/structured-data.ts`. Escape `<` in the JSON
-(`JSON.stringify(data).replace(/</g, "\\u003c")`).
 
 Rules: only facts already on the page. No ratings, reviews or client names
 that are not `clientCleared: true`.
@@ -141,8 +157,11 @@ that are not `clientCleared: true`.
 on `/about` as soon as `public/cv.pdf` exists.
 
 **Jan does:** export the CV to PDF and strip its metadata (author, software,
-edit history): in Adobe Acrobat *File → Properties*, or with
-`exiftool -all:all= cv.pdf`. Save as `public/cv.pdf`.
+edit history): in Adobe Acrobat *File → Properties* and *Save As*, or with
+`exiftool -all:all= cv.pdf` **followed by** `qpdf --linearize cv.pdf
+cv-clean.pdf`. ExifTool's PDF edits are an incremental update — reversible
+by design — so without the qpdf rewrite the old metadata is still in the
+file. Save the result as `public/cv.pdf`.
 
 **Verify.** `/about` shows the button; the download opens the PDF.
 
@@ -150,14 +169,18 @@ edit history): in Adobe Acrobat *File → Properties*, or with
 
 **Why.** Clients who are ready want a slot, not an email thread.
 
-**How.**
+**Built.** `SITE.bookingUrl` (null, NEEDS) drives
+`components/site/book-call.tsx` — the outline pill, `data-magnetic`, new tab,
+rendered only for an https link — in three places:
 
-- `lib/site.ts` — add `bookingUrl: null as string | null` with a NEEDS
-  comment, like `visitsApi`.
-- A "Book a 30-min call" button (external link, `rel="noreferrer noopener"`)
-  in: the home hero next to "Get in touch" (`components/home/hero.tsx`), the
-  Services page CTA, and the Contact page. Renders nothing while `null`.
-- Style: the existing outline pill used for secondary CTAs; `data-magnetic`.
+- the home hero, after "Hire me". From 1100px it sits on its own row under
+  the other two (`.home-fit__actions` in `design/tokens.css`): three pills in
+  one row took the headline's width and broke it onto four lines at 1100 and
+  1280px. Measured with a placeholder link: the headline stays on two lines
+  at 1100×600, 1280×720 and 1536×864; the bento gives up 12px at 1100×600
+  only; the home page still does not scroll.
+- `/services` — under the header line. The page had no CTA of its own.
+- `/contact` — beside "Email me".
 
 **Jan does:** create a free https://cal.com account, a 30-minute event (with
 Google Calendar connected so busy times block), and send the event link.
