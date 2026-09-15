@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { SITE } from "@/lib/site";
+import { SearchButton } from "./search-button";
 import { ThemeToggle } from "./theme-toggle";
 import { VerifiedBadge } from "./verified-badge";
 
@@ -10,9 +11,10 @@ import { VerifiedBadge } from "./verified-badge";
  * Navigation moved to the bottom tab bar (components/shell/tab-bar.tsx),
  * after the reference, so this bar no longer has a menu button or a drawer.
  * What stays is what must be visible without scrolling: whose site this is,
- * the theme toggle, and "Get in touch" — one tap from any page.
+ * search, the theme toggle, and "Get in touch" — one tap from any page.
  *
- * A Server Component now; the theme toggle is its only client part.
+ * A Server Component now; the search button and theme toggle are its only
+ * client parts.
  */
 
 export function MobileBar() {
@@ -35,6 +37,7 @@ export function MobileBar() {
         </Link>
 
         <div className="ml-auto flex items-center gap-2">
+          <SearchButton variant="bar" />
           <ThemeToggle />
           <Link
             href="/contact"

@@ -37,7 +37,7 @@ export const NAV: NavLink[] = [
     n: "02",
     href: "/work",
     label: "Work",
-    hint: "Three systems in the field",
+    hint: "Four products, built end to end",
     icon: BriefcaseBusiness,
   },
   {

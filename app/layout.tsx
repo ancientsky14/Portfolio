@@ -20,6 +20,8 @@ import { TabBar } from "@/components/shell/tab-bar";
 import { BootIntro } from "@/components/motion/boot-intro";
 import { Archipelago } from "@/components/hero/archipelago";
 import { Optional } from "@/components/site/optional";
+import { SearchLauncher } from "@/components/shell/search-launcher";
+import { buildSearchIndex } from "@/lib/search-index";
 import "./globals.css";
 
 /* The three faces from the design direction. The CSS variable names here
@@ -110,6 +112,11 @@ export default function RootLayout({
         {/* Optional: a chunk that fails to load must not take the page down. */}
         <Optional>
           <PageMotionLazy />
+        </Optional>
+        {/* Ctrl+K search (Phase 4). The index is built here, at build time;
+            the palette's own code loads on first open. */}
+        <Optional>
+          <SearchLauncher entries={buildSearchIndex()} />
         </Optional>
         <ScrollProgress />
         <A11yPanel />

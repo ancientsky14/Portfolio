@@ -7,6 +7,7 @@ import { SITE } from "@/lib/site";
 import { SOCIALS } from "@/lib/socials";
 import { BrandIcon } from "@/components/icons/brand";
 import { NAV } from "./nav-links";
+import { SearchButton } from "./search-button";
 import { ThemeToggle } from "./theme-toggle";
 import { VerifiedBadge } from "./verified-badge";
 import { VisitCount } from "./visit-count";
@@ -124,6 +125,11 @@ export function Rail({ avatarSrc }: { avatarSrc: string | null }) {
         </div>
 
         <div aria-hidden="true" className="my-7 h-px bg-line" />
+
+        {/* search — opens the Ctrl+K palette (Phase 4) */}
+        <div className="mb-3">
+          <SearchButton variant="rail" />
+        </div>
 
         {/* nav */}
         <nav
