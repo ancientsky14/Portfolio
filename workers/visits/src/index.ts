@@ -6,6 +6,9 @@
  *   POST /hit    count this visitor (once per Manila day), return { count }
  *   GET  /count  return { count }
  *
+ * The total includes a fixed +3,000 start offset (migration 0002, Jan,
+ * 2026-09-15). Real visits = count - 3000.
+ *
  * Privacy: no IP address is stored. A visitor is a SHA-256 of a secret salt,
  * the day, the IP and the user agent; keys older than two days are deleted
  * nightly. No cookies are set.

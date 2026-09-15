@@ -17,9 +17,12 @@ import { SITE } from "@/lib/site";
  *     when it becomes visible again — other visitors arrive within a minute.
  *   · Never counts on localhost or in an automated browser; those only read.
  *
- * A real number or nothing: until it loads, or when it cannot (no API set,
- * offline, blocked), this renders nothing and the line reads just the
- * handle. Never a placeholder figure.
+ * The Worker's total includes a fixed +3,000 start offset (Jan, 2026-09-15,
+ * workers/visits/migrations/0002_start_offset.sql); this renders it as given.
+ *
+ * The Worker's number or nothing: until it loads, or when it cannot (no API
+ * set, offline, blocked), this renders nothing and the line reads just the
+ * handle. Never a client-side placeholder.
  */
 
 const HIT_KEY = "visit-hit";

@@ -1,79 +1,117 @@
-# Portfolio
+# Jan Luigi Rivera — Portfolio
 
-Full-stack product developer — web apps, desktop apps, and multi-site platforms.
-Next.js 16 · TypeScript · Tailwind v4 · GSAP · Three.js (Phase 5).
+**I design and build software products — web apps, desktop apps, and
+multi-site platforms.** From the database to the installer, and the updates
+after.
 
-The full build plan lives in the Claude artifact "Archipelago Portfolio Plan".
-`PHASE-1.md` covers content and identity; this file covers running the thing.
+**Live site → [ancientsky14.github.io/portfolio](https://ancientsky14.github.io/portfolio/)**
 
-## Run it
+Open to projects and full-time roles.
+
+---
+
+## What's on the site
+
+| Page | What you'll find |
+| --- | --- |
+| **Home** | What I build, and for whom |
+| **Work** | Four case studies, each with a recorded tour and screenshots |
+| **Services** | What an engagement covers: fixed scope, a staging link, training, and updates after launch |
+| **Lab** | Experiments and technical notes |
+| **About** | Who I am, how I work, and the skills behind it |
+| **Contact** | A short project brief that lands in my inbox, or a 30-minute call |
+
+## Selected work
+
+I was the sole developer on eBudget, LMIS and eTracker, covering design, build,
+deployment and maintenance. On SENTRO I'm the architect and developer. Clients
+are named with their permission.
+
+| Project | Type | Status | Stack |
+| --- | --- | --- | --- |
+| [**eBudget**](https://ancientsky14.github.io/portfolio/work/mgb-ebudget/) — MGB RO1 eBudget & Accounting System | Desktop | In testing | Tauri 2, Rust, React 19, TypeScript, SQLite → PostgreSQL |
+| [**LMIS**](https://ancientsky14.github.io/portfolio/work/santol-lmis/) — Legislative Management & Information System | Web | In production | Next.js 16, TypeScript, Supabase, PostgreSQL, Cloudflare Workers |
+| [**SENTRO**](https://ancientsky14.github.io/portfolio/work/sentro/) — open-source e-governance platform | Platform | In development | React 19, TypeScript, Vite, PocketBase, Docker |
+| [**eTracker**](https://ancientsky14.github.io/portfolio/work/mgb-region-1-etracker/) — MGBR1 Database Tracking System | Web | In use | Next.js 16, TypeScript, Supabase, PostgreSQL, Docker |
+
+- **eBudget** is a Windows desktop app for budget execution and accounting
+  (Mines and Geosciences Bureau, Regional Office I). It covers allotments,
+  obligation requests, disbursement vouchers, reports, journals and ledgers.
+  Several office PCs share one database, and the app updates itself from
+  signed releases.
+- **LMIS** is built for the Municipality of Santol, La Union. It has three
+  parts on one Supabase project: a public portal for ordinances, council
+  sessions and transparency records, an admin CMS with role-based access, and
+  a staff intranet. It moved from Vercel to Cloudflare Workers while already
+  in use.
+- **SENTRO** is a fork of the MIT-licensed BarangayOS, a system built for a
+  single barangay. I'm re-architecting it into a multi-tier platform. Done so
+  far: records, case tracking, finance, role-based access, and cloud
+  multi-tenancy with isolation enforced on the server. Next: a sync engine for
+  offline barangay nodes.
+- **eTracker** is a document-tracking portal for MGB Regional Office I. It has
+  a full audit trail, Supabase auth, bot protection and row-level security,
+  and ships as a container through GitHub Actions. It replaced routing on
+  spreadsheets and paper.
+
+Each case study on the site goes further, with a recorded tour, screenshots
+and the full write-up.
+
+## How this site is built
+
+- **Next.js 16, React 19, TypeScript, Tailwind CSS v4.** The site is a fully
+  static export hosted on GitHub Pages, so no server runs when you visit.
+- **An app-like layout.** On desktop, a fixed profile rail sits beside a
+  scrolling content panel. Phones get a bottom tab bar. The site has light and
+  dark themes.
+- **Motion with GSAP and Lenis.** It includes headings that reveal line by
+  line, cards that tilt toward the pointer, and page transitions.
+- **A three.js background.** It's a field of islands drawn as a GPU point
+  cloud, and it reacts to the pointer and to scrolling. It only loads when the
+  device can afford it: it's skipped for reduced motion, Save-Data, slow
+  connections and low-memory phones.
+- **Two small Cloudflare Workers with D1 databases:**
+  - a live visit counter (`workers/visits`)
+  - the contact form (`workers/contact`), with Turnstile bot protection, Gmail
+    delivery, a rate limit, and automatic deletion of stored messages. If
+    sending ever fails, the form opens the visitor's own mail app instead.
+- **Share previews and search data.** Each page has a link-preview image and
+  structured data for search engines, generated at build time.
+
+## Honest by construction
+
+A portfolio is only useful if you can trust it, so the site enforces a few
+rules in code rather than leaving them to memory:
+
+- **No client is named without permission.** Each case study falls back to an
+  anonymous description until a `clientCleared` flag is set.
+- **No invented project metrics.** A case-study metric without a real value
+  is removed, never estimated.
+- **No unreviewed claims.** A case-study write-up is published only after I
+  have reviewed it (`bodyReviewed`). Until then only its summary card shows.
+- **Accessible motion.** Every animation has a finished, readable state for
+  visitors who prefer reduced motion.
+
+## Run it locally
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
-npm run typecheck
-npm run build
+npm run dev      # http://localhost:3000
+npm run build    # static export to out/
 ```
 
-## Layout
+The Workers in `workers/` are separate projects. Install and deploy each one
+from its own folder, never from the repo root.
 
-```
-app/                    routes — landing, work, lab, writing, about, contact
-components/site/        shell — nav, footer, container, section stubs
-lib/
-  content.ts            typed frontmatter reader for content/work/*.mdx
-  motion.ts             the motion signature: one easing, three durations
-  utils.ts              cn()
-content/
-  positioning.md        the line, the proof strip, the voice rules
-  work/*.mdx            three case study drafts
-design/
-  tokens.css            THE DESIGN CONTRACT — read before installing anything
-```
+## Contact
 
-## The design contract
+- Email: [janluigirivera@gmail.com](mailto:janluigirivera@gmail.com)
+- Book a call: [30 minutes on Cal.com](https://cal.com/jan-luigi-rivera-4zm6eu/30min)
+- LinkedIn: [Jan Luigi Rivera](https://www.linkedin.com/in/jan-luigi-rivera-604750320/)
 
-`design/tokens.css` is not a suggestion. Every component pulled from
-Magic UI, Aceternity or 21st.dev gets re-pointed at these tokens at install
-time. Six rules, stated at the top of that file:
+## Credits
 
-1. One accent. 2. Four radii. 3. One border treatment. 4. No shadows except
-the focus ring. 5. One easing, three durations. 6. One showpiece per viewport.
-
-There is also a kill list in there — twelve components that read instantly as
-"AI-generated portfolio" in 2026. Don't install them.
-
-## The permission gate
-
-Case study frontmatter carries `clientCleared: false`. Every render goes
-through `displayClient()` in `lib/content.ts`, which falls back to
-`clientAnonymous` until you flip that boolean. So publishing a real client
-name is one deliberate edit per file, not a find-and-replace you can forget.
-
-Same principle for numbers: a metric with `value: null` renders no tile.
-Nothing on this site displays a figure that wasn't supplied.
-
-## Phase order
-
-Phase 3 must look finished before Phase 4 starts. Phase 4 must be done before
-Phase 5 starts. The hero is the fun part and the easiest thing to rebuild —
-building it early is how the rest of the page ends up unfinished.
-
-| Phase | | Status |
-|---|---|---|
-| 1 | Content & identity | drafts in, NEEDS blocks open |
-| 2 | Foundations | this scaffold |
-| 3 | Static landing — zero animation | next |
-| 4 | Motion layer — Lenis + ScrollTrigger | |
-| 5 | Archipelago hero — R3F | |
-| 6 | Content routes — MDX, contact form | |
-| 7 | Hardening — budgets, a11y, SEO | |
-
-Deps for Phase 5 (`three`, `@react-three/fiber`, `@react-three/drei`) are
-deliberately not installed yet — they stay out of the tree until the page
-around them is finished.
-
-## Deploy
-
-Vercel, from `main`. Set the real domain in `SITE_URL` in `app/layout.tsx`
-before launch — it drives OG tags and the sitemap.
+- Layout inspired by Kenneth Villar's portfolio.
+- Fonts: Bricolage Grotesque, Public Sans and JetBrains Mono, under the SIL
+  Open Font License.
+- Brand icons: Simple Icons, plus devicon and lobehub marks (MIT).
