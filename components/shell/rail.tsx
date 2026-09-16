@@ -124,10 +124,12 @@ export function Rail({ avatarSrc }: { avatarSrc: string | null }) {
           </div>
         </div>
 
-        <div aria-hidden="true" className="my-7 h-px bg-line" />
+        {/* my-5, not my-7: the search row below costs height the rail does
+            not have at 1280x720 (Phase 4, measured against the nav). */}
+        <div aria-hidden="true" className="my-5 h-px bg-line" />
 
         {/* search — opens the Ctrl+K palette (Phase 4) */}
-        <div className="mb-3">
+        <div className="mb-2">
           <SearchButton variant="rail" />
         </div>
 

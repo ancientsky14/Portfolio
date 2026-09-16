@@ -191,7 +191,16 @@ export default function CommandPalette({
                         ) : null}
                       </span>
                       {e.hint ? (
-                        <span className="block truncate text-xs text-text-3">{e.hint}</span>
+                        // text-3 on the highlighted row is 4.04:1 in dark
+                        // (accent-soft) — under AA. text-2 there instead.
+                        <span
+                          className={cn(
+                            "block truncate text-xs",
+                            on ? "text-text-2" : "text-text-3",
+                          )}
+                        >
+                          {e.hint}
+                        </span>
                       ) : null}
                     </span>
                     {e.external ? (

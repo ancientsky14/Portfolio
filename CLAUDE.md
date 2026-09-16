@@ -255,6 +255,19 @@ renders in `next dev` under a draft banner; renders in production **only**
 when the frontmatter has `bodyReviewed: true`. Never set that flag on
 Jan's behalf — the drafts contain INFERRED prose.
 
+### Search — Ctrl+K (2026-09-16)
+
+`lib/search-index.ts` builds ~22 entries at build time (nav, case studies
+through `displayClient()`, lab notes, services, and the contact actions that
+exist). `lib/search.ts` holds the entry type, `PALETTE_EVENT` and the
+matcher — browser-safe, no `cmdk` or `fuse.js`.
+`components/shell/search-launcher.tsx` is the only part in first-load JS:
+it listens for Ctrl+K / ⌘K and the buttons in the rail and mobile bar
+(`search-button.tsx`), then loads `command-palette.tsx` with `next/dynamic`
+on first open. Keep it that way — the palette is never imported directly.
+The palette follows the work viewer: portal, locked scroller,
+`data-lenis-prevent`, focus returned on close.
+
 ### Registry components
 
 Magic UI Dot Pattern → `components/ui/dot-pattern.tsx`, Magic UI Scroll

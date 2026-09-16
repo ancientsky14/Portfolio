@@ -39,7 +39,9 @@ export function SearchButton({ variant }: { variant: "rail" | "bar" }) {
       type="button"
       onClick={open}
       aria-keyshortcuts={mac ? "Meta+K" : "Control+K"}
-      className="flex h-11 w-full items-center gap-3 rounded-lg border border-line bg-surface px-4 text-sm text-text-3 shadow-soft transition-colors hover:border-accent hover:text-text"
+      // h-9, not h-11: the rail is full at 1280x720, and a taller row pushed
+      // Contact out of view (measured, Phase 4).
+      className="flex h-9 w-full items-center gap-3 rounded-lg border border-line bg-surface px-4 text-sm text-text-3 shadow-soft transition-colors hover:border-accent hover:text-text"
     >
       <Search size={17} strokeWidth={1.75} aria-hidden="true" />
       <span className="flex-1 text-left">Search the site</span>

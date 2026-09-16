@@ -14,7 +14,7 @@ Build in phase order. Each phase is independently shippable.
 | 1 | Share preview images, search-engine data, CV button, Book-a-call — **built 2026-09-14**, booking link set, CV published | LinkedIn/GitHub hyperlinks in the CV |
 | 2 | Contact form that really sends (Gmail SMTP) — **live 2026-09-14** | Gmail App Password, Turnstile keys |
 | 3 | Testimonials | Real quotes + written permission |
-| 4 | Ctrl+K search | — |
+| 4 | Ctrl+K search — **built 2026-09-16** | — |
 | 5 | Tagalog / English on key pages | Review of every Tagalog page |
 
 ---
@@ -439,6 +439,35 @@ one, it renders on the three pages.
 **Verify.** Keyboard only: Ctrl+K → type "ebud" → Enter lands on
 `/work/mgb-ebudget/`; Esc returns focus; screen reader announces results;
 main JS size unchanged within a few KB.
+
+**Built 2026-09-16.** 22 entries: pages, four case studies, three lab notes,
+four services, and the actions that exist (brief, email, booking, CV).
+Writing is left out while `lib/writing.ts` is empty — no pages to land on.
+
+Where it departs from the plan above:
+
+- **The palette is not in first-load JS.** `search-launcher.tsx` (a keydown
+  listener plus the `PALETTE_EVENT` hook, wrapped in `<Optional>`) loads
+  `command-palette.tsx` with `next/dynamic` on first open — one extra script
+  request, measured. First-load JS moved 191.6 → 192.7 KB gzip on home
+  (~154 KB excluding the `noModule` polyfill), still under budget. After R9b
+  showed startup is this site's slowest part, nothing unasked-for ships.
+- **Matching and entry shape live in `lib/search.ts`** (browser-safe);
+  `lib/search-index.ts` reads content and stays server-only.
+- **The rail row is h-9 with a tighter divider.** At h-11 the rail ran out
+  of height and pushed **Contact** below the fold at 1280×720; measured
+  four placements, and this one keeps the nav exactly as it was.
+- **The highlighted row's hint is `text-text-2`.** In dark theme `text-3`
+  on `accent-soft` measured 4.04:1 — the pairing R9 flagged as a latent
+  risk. axe caught it on the open dialog; now 0 violations in both themes.
+- Nav hint fixed on the way: Work said "Three systems in the field" with
+  four case studies published; now "Four products, built end to end".
+
+Verified: the flow above; ↑/↓ wrap; Tab stays in the field; Esc returns
+focus to the search button; a no-match message; opening from inside a form
+field; tapping a result on a phone; the top bar does not overflow at 390px;
+axe 0 violations (site-wide and on the open dialog, light and dark); the
+fitted home page still does not scroll at 1100×600, 1280×720 or 1536×864.
 
 ---
 
